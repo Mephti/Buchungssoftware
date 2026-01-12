@@ -14,10 +14,12 @@
     <nav>
         <?php if (session('isLoggedIn')): ?>
             <span style="margin-right:12px;">
-                Eingeloggt als: <?= esc(session('name')) ?> (<?= esc(session('role')) ?>)
-            </span>
+        <?= esc(session('name')) ?>
+    </span>
 
-            <a href="<?= site_url('/') ?>">Start</a>
+            <a href="<?= site_url('/mein-konto') ?>">Mein Konto</a>
+            <span style="margin:0 8px;">|</span>
+            <a href="<?= site_url('/meine-buchungen') ?>">Meine Buchungen</a>
             <span style="margin:0 8px;">|</span>
             <a href="<?= site_url('/logout') ?>">Logout</a>
         <?php else: ?>

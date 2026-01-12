@@ -15,3 +15,6 @@ $routes->get('logout', 'AuthController::logout');
 
 $routes->get('register', 'AuthController::registerForm');
 $routes->post('register', 'AuthController::register');
+
+$routes->get('mein-konto', 'AccountController::index');
+$routes->get('meine-buchungen', 'AccountController::bookings');

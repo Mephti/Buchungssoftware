@@ -19,6 +19,7 @@
         .status-belegt     { border-color: #1565c0; color: #1565c0; }
         .status-im-zeitraum { border-color: #6a1b9a; color: #6a1b9a; }
 
+
         .legend {
             display: flex;
             gap: 12px;

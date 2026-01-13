@@ -85,90 +85,185 @@ class BookingController extends BaseController
     {
         $booking = session('booking') ?? [];
 
-        // Nur Kunde darf buchen
         if (!session('isLoggedIn') || session('role') !== 'kunde') {
             return redirect()->to('/login');
         }
 
-        if (($booking['typ'] ?? null) !== 'liegeplatz') {
-            return redirect()->to('/#buchung');
-        }
-
+        $typ = $booking['typ'] ?? null;
         $von = $booking['von'] ?? null;
         $bis = $booking['bis'] ?? null;
-        $selectedIds = $booking['liegeplaetze'] ?? [];
 
-        if (!$von || !$bis || empty($selectedIds)) {
+        if (!$typ || !$von || !$bis) {
             return redirect()->to('/#buchung');
         }
 
-        $lpModel = new \App\Models\LiegeplatzModel();
-        $selectedLiegeplaetze = $lpModel->whereIn('lid', $selectedIds)
-            ->orderBy('anleger', 'ASC')
-            ->orderBy('nummer', 'ASC')
-            ->findAll();
+        if ($typ === 'liegeplatz') {
+            $selectedIds = $booking['liegeplaetze'] ?? [];
+            if (empty($selectedIds)) return redirect()->to('/#buchung');
 
-        return view('booking/summary', [
-            'von' => $von,
-            'bis' => $bis,
-            'selectedLiegeplaetze' => $selectedLiegeplaetze,
-        ]);
+            $lpModel = new \App\Models\LiegeplatzModel();
+            $items = $lpModel->whereIn('lid', $selectedIds)
+                ->orderBy('anleger', 'ASC')
+                ->orderBy('nummer', 'ASC')
+                ->findAll();
+
+            return view('booking/summary', [
+                'typ' => 'liegeplatz',
+                'von' => $von,
+                'bis' => $bis,
+                'items' => $items,
+                'error' => session()->getFlashdata('error'),
+            ]);
+        }
+
+        if ($typ === 'boot') {
+            $selectedIds = $booking['boote'] ?? [];
+            if (empty($selectedIds)) return redirect()->to('/#buchung');
+
+            $bootModel = new \App\Models\BootModel();
+            $items = $bootModel->whereIn('boid', $selectedIds)
+                ->orderBy('name', 'ASC')
+                ->findAll();
+
+            return view('booking/summary', [
+                'typ' => 'boot',
+                'von' => $von,
+                'bis' => $bis,
+                'items' => $items,
+                'error' => session()->getFlashdata('error'),
+            ]);
+        }
+
+        return redirect()->to('/#buchung');
     }
     public function finish()
     {
         $booking = session('booking') ?? [];
 
-        // Nur Kunde darf buchen
         if (!session('isLoggedIn') || session('role') !== 'kunde') {
             return redirect()->to('/login');
         }
 
-        if (($booking['typ'] ?? null) !== 'liegeplatz') {
-            return redirect()->to('/#buchung');
-        }
-
+        $typ = $booking['typ'] ?? null;
         $von = $booking['von'] ?? null;
         $bis = $booking['bis'] ?? null;
-        $selectedIds = $booking['liegeplaetze'] ?? [];
 
-        if (!$von || !$bis || empty($selectedIds)) {
+        if (!$typ || !$von || !$bis) {
             return redirect()->to('/#buchung');
         }
 
         $kid = (int) session('user_id');
-
-        $buchungModel = new \App\Models\LiegeplatzBuchungModel();
-
-        // 1) Kollisionen prüfen
-        $bookedLids = $buchungModel->findBookedLidsForRange($von, $bis);
-        $bookedSet = array_flip(array_map('intval', $bookedLids));
-
-        foreach ($selectedIds as $lid) {
-            $lid = (int)$lid;
-            if (isset($bookedSet[$lid])) {
-                return redirect()->to('/buchung/zusammenfassung')
-                    ->with('error', 'Mindestens ein ausgewählter Liegeplatz ist im Zeitraum nicht mehr verfügbar.');
-            }
-        }
-
-        // 2) Inserts (eine Buchung pro liegeplatz)
         $now = date('Y-m-d H:i:s');
-        foreach ($selectedIds as $lid) {
-            $buchungModel->insert([
-                'lid' => (int)$lid,
-                'kid' => $kid,
-                'von' => $von,
-                'bis' => $bis,
-                'status' => 'aktiv',
-                'created_at' => $now,
-            ]);
+
+        // === Liegeplatz buchen ===
+        if ($typ === 'liegeplatz') {
+            $selectedIds = $booking['liegeplaetze'] ?? [];
+            if (empty($selectedIds)) return redirect()->to('/#buchung');
+
+            $buchungModel = new \App\Models\LiegeplatzBuchungModel();
+
+            // Kollisionen prüfen
+            $bookedLids = $buchungModel->findBookedLidsForRange($von, $bis);
+            $bookedSet = array_flip(array_map('intval', $bookedLids));
+
+            foreach ($selectedIds as $lid) {
+                $lid = (int)$lid;
+                if (isset($bookedSet[$lid])) {
+                    return redirect()->to('/buchung/zusammenfassung')
+                        ->with('error', 'Mindestens ein ausgewählter Liegeplatz ist im Zeitraum nicht mehr verfügbar.');
+                }
+            }
+
+            foreach ($selectedIds as $lid) {
+                $buchungModel->insert([
+                    'lid' => (int)$lid,
+                    'kid' => $kid,
+                    'von' => $von,
+                    'bis' => $bis,
+                    'status' => 'aktiv',
+                    'created_at' => $now,
+                ]);
+            }
+
+            session()->remove('booking');
+
+            return redirect()->to('/meine-buchungen')
+                ->with('success', 'Liegeplatz-Buchung erfolgreich angelegt.');
         }
 
-        // 3) Session-Buchung zurücksetzen
-        session()->remove('booking');
+        // === Boot buchen ===
+        if ($typ === 'boot') {
+            $selectedIds = $booking['boote'] ?? [];
+            if (empty($selectedIds)) return redirect()->to('/#buchung');
 
-        return redirect()->to('/meine-buchungen')
-            ->with('success', 'Buchung erfolgreich angelegt.');
+            $bootBuchungModel = new \App\Models\BootBuchungModel();
+
+            // Kollisionen prüfen
+            $bookedBoids = $bootBuchungModel->findBookedBoidsForRange($von, $bis);
+            $bookedSet = array_flip(array_map('intval', $bookedBoids));
+
+            foreach ($selectedIds as $boid) {
+                $boid = (int)$boid;
+                if (isset($bookedSet[$boid])) {
+                    return redirect()->to('/buchung/zusammenfassung')
+                        ->with('error', 'Mindestens ein ausgewähltes Boot ist im Zeitraum nicht mehr verfügbar.');
+                }
+            }
+
+            foreach ($selectedIds as $boid) {
+                $bootBuchungModel->insert([
+                    'boid' => (int)$boid,
+                    'kid' => $kid,
+                    'von' => $von,
+                    'bis' => $bis,
+                    'status' => 'aktiv',
+                    'created_at' => $now,
+                ]);
+            }
+
+            session()->remove('booking');
+
+            return redirect()->to('/meine-buchungen')
+                ->with('success', 'Boot-Buchung erfolgreich angelegt.');
+        }
+
+        return redirect()->to('/#buchung');
+    }
+
+    public function toggleBoot()
+    {
+        $boid = (int) $this->request->getPost('boid');
+        if ($boid <= 0) {
+            return redirect()->to('/#buchung');
+        }
+
+        $booking = session('booking') ?? [];
+        $selected = $booking['boote'] ?? [];
+
+        if (in_array($boid, $selected, true)) {
+            $selected = array_values(array_diff($selected, [$boid]));
+        } else {
+            $selected[] = $boid;
+        }
+
+        $booking['boote'] = $selected;
+        session()->set('booking', $booking);
+
+        return redirect()->to('/#buchung');
+    }
+
+    public function bootFilter()
+    {
+        $q = trim((string) $this->request->getPost('q'));
+
+        $booking = session('booking') ?? [];
+        $booking['boot_filter'] = [
+            'q' => $q,
+        ];
+
+        session()->set('booking', $booking);
+
+        return redirect()->to('/#buchung');
     }
 
 }

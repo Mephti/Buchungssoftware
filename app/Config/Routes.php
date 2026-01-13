@@ -26,3 +26,6 @@ $routes->post('buchung/filter', 'BookingController::filter');
 $routes->post('buchung/liegeplatz-toggle', 'BookingController::toggleLiegeplatz');
 $routes->get('buchung/zusammenfassung', 'BookingController::summary');
 $routes->post('buchung/abschliessen', 'BookingController::finish');
+
+$routes->post('buchung/boot-toggle', 'BookingController::toggleBoot');
+$routes->post('buchung/boot-filter', 'BookingController::bootFilter');

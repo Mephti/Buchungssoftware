@@ -4,70 +4,110 @@ namespace App\Controllers;
 
 use App\Models\LiegeplatzModel;
 use App\Models\LiegeplatzBuchungModel;
+use App\Models\BootModel;
+use App\Models\BootBuchungModel;
 
 class HomeController extends BaseController
 {
     public function index()
     {
         $booking = session('booking') ?? [];
-
-        $liegeplatzModel = new LiegeplatzModel();
-        $buchungModel    = new LiegeplatzBuchungModel();
-
-        $liegeplaetze = [];
-        $selectedLiegeplaetze = [];
-
         $typ = $booking['typ'] ?? null;
 
-        // Ausgewählte Plätze rechts (immer unabhängig von Filter laden)
-        $selectedIds = $booking['liegeplaetze'] ?? [];
-        if (!empty($selectedIds)) {
-            $selectedLiegeplaetze = $liegeplatzModel
-                ->whereIn('lid', $selectedIds)
-                ->orderBy('anleger', 'ASC')
-                ->orderBy('nummer', 'ASC')
-                ->findAll();
-        }
+        // Models
+        $liegeplatzModel = new LiegeplatzModel();
+        $lpBuchungModel  = new LiegeplatzBuchungModel();
+        $bootModel       = new BootModel();
+        $bootBuchungModel= new BootBuchungModel();
 
-        // Linke Liste nur für Liegeplatz-Modus
+        // Zeitraum (für beide Typen relevant)
+        $von = $booking['von'] ?? null;
+        $bis = $booking['bis'] ?? null;
+
+        // === LIEGEPLÄTZE ===
+        $liegeplaetze = [];
+        $selectedLiegeplaetze = [];
         if ($typ === 'liegeplatz') {
+            // Rechte Box (selected) unabhängig von Filter laden
+            $selectedIds = $booking['liegeplaetze'] ?? [];
+            if (!empty($selectedIds)) {
+                $selectedLiegeplaetze = $liegeplatzModel
+                    ->whereIn('lid', $selectedIds)
+                    ->orderBy('anleger', 'ASC')
+                    ->orderBy('nummer', 'ASC')
+                    ->findAll();
+            }
+
+            // Linke Liste
             $onlyAvailable = (bool)($booking['filter']['only_available'] ?? false);
             $q = (string)($booking['filter']['q'] ?? '');
 
-            $von = $booking['von'] ?? null;
-            $bis = $booking['bis'] ?? null;
+            $liegeplaetze = $liegeplatzModel->findFiltered(false, $q);
 
-            // Basisliste (nach Anleger/Nummer/Filter)
-            $liegeplaetze = $liegeplatzModel->findFiltered(false, $q); // nur Suche, NICHT status-filter
-
-            // Wenn Zeitraum gesetzt ist: booked lids bestimmen und Flag setzen
             $bookedLids = [];
             if ($von && $bis) {
-                $bookedLids = $buchungModel->findBookedLidsForRange($von, $bis);
+                $bookedLids = $lpBuchungModel->findBookedLidsForRange($von, $bis);
             }
-
-            // Verfügbarkeit je Platz berechnen
             $bookedSet = array_flip(array_map('intval', $bookedLids));
+
             foreach ($liegeplaetze as &$lp) {
                 $lid = (int)$lp['lid'];
 
-                $isBlockedByStatus = ($lp['status'] !== 'verfuegbar'); // gesperrt/vermietet/belegt => generell nicht wählbar
-                $isBookedInRange   = isset($bookedSet[$lid]);          // im Zeitraum gebucht
+                $isBlockedByStatus = ($lp['status'] !== 'verfuegbar');
+                $isBookedInRange   = isset($bookedSet[$lid]);
 
                 $lp['is_available_in_range'] = (!$isBlockedByStatus && !$isBookedInRange);
                 $lp['is_booked_in_range']    = $isBookedInRange;
             }
             unset($lp);
 
-            // Wenn "nur verfügbare" aktiv: nach Zeitraum-Verfügbarkeit filtern
             if ($onlyAvailable) {
                 $liegeplaetze = array_values(array_filter($liegeplaetze, fn($lp) => !empty($lp['is_available_in_range'])));
             }
         }
 
+        // === BOOTE ===
+        $boote = [];
+        $selectedBoote = [];
+        if ($typ === 'boot') {
+            // Rechte Box: selected boote laden
+            $selectedBoids = $booking['boote'] ?? [];
+            if (!empty($selectedBoids)) {
+                $selectedBoote = $bootModel
+                    ->whereIn('boid', $selectedBoids)
+                    ->orderBy('name', 'ASC')
+                    ->findAll();
+            }
+
+            // Linke Liste: Filter (nur Suche)
+            $q = (string)($booking['boot_filter']['q'] ?? '');
+            $boote = $bootModel->findFiltered($q);
+
+            // Zeitraum-Verfügbarkeit: aktive Bootbuchungen + Bootstatus
+            $bookedBoids = [];
+            if ($von && $bis) {
+                $bookedBoids = $bootBuchungModel->findBookedBoidsForRange($von, $bis);
+            }
+            $bookedSet = array_flip(array_map('intval', $bookedBoids));
+
+            foreach ($boote as &$b) {
+                $boid = (int)$b['boid'];
+
+                // Bootstatus blockt generell (nicht buchbar)
+                $isBlockedByStatus = ($b['status'] !== 'verfuegbar');
+                $isBookedInRange   = isset($bookedSet[$boid]);
+
+                $b['is_available_in_range'] = (!$isBlockedByStatus && !$isBookedInRange);
+                $b['is_booked_in_range']    = $isBookedInRange;
+            }
+            unset($b);
+        }
+
         return view('home', [
             'liegeplaetze' => $liegeplaetze,
             'selectedLiegeplaetze' => $selectedLiegeplaetze,
+            'boote' => $boote,
+            'selectedBoote' => $selectedBoote,
         ]);
     }
 }

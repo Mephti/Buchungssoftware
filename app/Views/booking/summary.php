@@ -3,23 +3,39 @@
 
 <h1>Buchung – Zusammenfassung</h1>
 
-<?php if ($error = session()->getFlashdata('error')): ?>
+<?php if (!empty($error)): ?>
     <p style="color:red;"><?= esc($error) ?></p>
 <?php endif; ?>
 
 <p>
-    <strong>Zeitraum:</strong> <?= esc($von) ?> bis <?= esc($bis) ?>
+    <strong>Zeitraum:</strong> <?= esc($von) ?> bis <?= esc($bis) ?><br>
+    <strong>Typ:</strong> <?= esc($typ) ?>
 </p>
 
-<h3>Ausgewählte Liegeplätze</h3>
-<?php if (empty($selectedLiegeplaetze)): ?>
-    <p>Keine Liegeplätze ausgewählt.</p>
-<?php else: ?>
-    <ul>
-        <?php foreach ($selectedLiegeplaetze as $lp): ?>
-            <li>Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?></li>
-        <?php endforeach; ?>
-    </ul>
+<?php if ($typ === 'liegeplatz'): ?>
+    <h3>Ausgewählte Liegeplätze</h3>
+    <?php if (empty($items)): ?>
+        <p>Keine Liegeplätze ausgewählt.</p>
+    <?php else: ?>
+        <ul>
+            <?php foreach ($items as $lp): ?>
+                <li>Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+<?php endif; ?>
+
+<?php if ($typ === 'boot'): ?>
+    <h3>Ausgewählte Boote</h3>
+    <?php if (empty($items)): ?>
+        <p>Keine Boote ausgewählt.</p>
+    <?php else: ?>
+        <ul>
+            <?php foreach ($items as $b): ?>
+                <li><?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
 <?php endif; ?>
 
 <form method="post" action="<?= site_url('/buchung/abschliessen') ?>">

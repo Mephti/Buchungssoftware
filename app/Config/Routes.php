@@ -18,3 +18,11 @@ $routes->post('register', 'AuthController::register');
 
 $routes->get('mein-konto', 'AccountController::index');
 $routes->get('meine-buchungen', 'AccountController::bookings');
+
+$routes->post('buchung/auswahl', 'BookingController::select');
+$routes->get('buchung/weiter', 'BookingController::next');
+$routes->post('buchung/reset', 'BookingController::reset');
+$routes->post('buchung/filter', 'BookingController::filter');
+$routes->post('buchung/liegeplatz-toggle', 'BookingController::toggleLiegeplatz');
+$routes->get('buchung/zusammenfassung', 'BookingController::summary');
+$routes->post('buchung/abschliessen', 'BookingController::finish');

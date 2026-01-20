@@ -18,6 +18,7 @@ $routes->post('register', 'AuthController::register');
 
 $routes->get('mein-konto', 'AccountController::index');
 $routes->get('meine-buchungen', 'AccountController::bookings');
+$routes->post('meine-buchungen/storno', 'AccountController::cancelBooking');
 
 $routes->post('buchung/auswahl', 'BookingController::select');
 $routes->get('buchung/weiter', 'BookingController::next');

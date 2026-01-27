@@ -9,7 +9,7 @@ class BootBuchungModel extends Model
     protected $table      = 'boot_buchungen';
     protected $primaryKey = 'bbid';
     protected $returnType = 'array';
-    protected $allowedFields = ['boid', 'kid', 'von', 'bis', 'status', 'created_at'];
+    protected $allowedFields = ['boid', 'kid', 'von', 'bis', 'status', 'created_at', 'group_token'];
     protected $useTimestamps = false;
 
     public function findBookedBoidsForRange(string $von, string $bis): array

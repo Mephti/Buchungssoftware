@@ -30,3 +30,4 @@ $routes->post('buchung/abschliessen', 'BookingController::finish');
 
 $routes->post('buchung/boot-toggle', 'BookingController::toggleBoot');
 $routes->post('buchung/boot-filter', 'BookingController::bootFilter');
+$routes->post('buchung/assign', 'BookingController::assign');

@@ -1,32 +1,34 @@
-<!doctype html>
-<html lang="de">
-<head>
-    <meta charset="utf-8">
-    <title>Login</title>
-</head>
-<body>
-<h1>Login</h1>
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
 
-<?php if (!empty($error)): ?>
-    <p style="color:red;"><?= esc($error) ?></p>
-<?php endif; ?>
+<div class="card form-card">
+    <h1>LOGIN</h1>
 
-<form method="post" action="<?= site_url('/login') ?>">
-    <?= csrf_field() ?>
+    <?php if (!empty($error)): ?>
+        <div class="alert alert--error"><?= esc($error) ?></div>
+    <?php endif; ?>
 
-    <div>
-        <label>E-Mail</label><br>
-        <input type="email" name="email" required>
-    </div>
+    <form method="post" action="<?= site_url('/login') ?>">
+        <?= csrf_field() ?>
 
-    <div style="margin-top:8px;">
-        <label>Passwort</label><br>
-        <input type="password" name="passwort" required>
-    </div>
+        <div class="field">
+            <label for="email">E-Mail</label>
+            <input class="input" type="email" id="email" name="email" required>
+        </div>
 
-    <div style="margin-top:12px;">
-        <button type="submit">Einloggen</button>
-    </div>
-</form>
-</body>
-</html>
+        <div class="field" style="margin-top:10px;">
+            <label for="passwort">Passwort</label>
+            <input class="input" type="password" id="passwort" name="passwort" required>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn--primary" type="submit">Weiter ▾</button>
+        </div>
+
+        <p class="muted" style="text-align:center; margin-top:10px;">
+            Noch nicht registriert? <a href="<?= site_url('/register') ?>">Registrierung</a>
+        </p>
+    </form>
+</div>
+
+<?= $this->endSection() ?>

@@ -1,268 +1,388 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
-<h1>Willkommen am Plauer See</h1>
+<?php
+$booking = session('booking') ?? [];
+$typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
+?>
 
-<p>
-    Buche bequem online einen Liegeplatz oder ein Boot.
-</p>
+<section class="platzhalter">
+    <div class="platzhalter__image" aria-label="Hafenansicht">
+        <!-- Du kannst später ein echtes Bild nutzen (public/img/platzhalter.jpg) -->
+        <img src="<?= base_url('img/cover.webp') ?>" alt="Hafen am Plauer See"
+             onerror="this.style.display='none'; this.parentElement.style.minHeight='320px';">
+    </div>
 
-<p>
-    <a href="#buchung">
-        <button>Buchung starten</button>
-    </a>
-</p>
+    <div class="platzhalter__content">
+        <div class="platzhalter__meta">
+            <div></div>
+            <div class="rating" aria-label="Bewertung 4,8 von 5">
+                <span class="star" aria-hidden="true"></span>
+                4,8 / 5
+            </div>
+        </div>
 
-<hr>
+        <h1>Bootsverleih<br>am Plauer See</h1>
 
-<section id="buchung">
-    <h2>Buchung</h2>
+        <p>
+            Buche bequem online einen Liegeplatz oder ein Boot.
+            Wähle Zeitraum, sieh die Verfügbarkeit und schließe die Buchung direkt ab.
+        </p>
 
-    <form method="post" action="<?= site_url('/buchung/auswahl') ?>">
-        <?= csrf_field() ?>
+        <a class="btn btn--primary" href="#buchung">Buchung ▾</a>
+    </div>
+</section>
 
-        <label>
-            Von:
-            <input type="date" name="von" required
-                   value="<?= esc(session('booking.von') ?? '') ?>">
-        </label>
+<h2 class="section-title" id="buchung">Buchung</h2>
 
-        <label style="margin-left:8px;">
-            Bis:
-            <input type="date" name="bis" required
-                   value="<?= esc(session('booking.bis') ?? '') ?>">
-        </label>
+<!-- Zeitraum + Typ -->
+<form method="post" action="<?= site_url('/buchung/auswahl') ?>">
+    <?= csrf_field() ?>
 
-        <label style="margin-left:16px;">
-            <input type="radio" name="typ" value="liegeplatz"
-                    <?= (session('booking.typ') ?? 'liegeplatz') === 'liegeplatz' ? 'checked' : '' ?>>
+    <div class="booking__controls">
+        <div class="field">
+            <label for="von">Von</label>
+            <input class="input" type="date" id="von" name="von" required
+                   value="<?= esc($booking['von'] ?? '') ?>">
+        </div>
+
+        <div class="field">
+            <label for="bis">Bis</label>
+            <input class="input" type="date" id="bis" name="bis" required
+                   value="<?= esc($booking['bis'] ?? '') ?>">
+        </div>
+
+        <button class="btn" type="submit">Datum übernehmen</button>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Buchungstyp">
+        <?php $current = ($booking['typ'] ?? 'liegeplatz'); ?>
+        <label class="<?= $current === 'liegeplatz' ? 'active' : '' ?>">
+            <input type="radio" name="typ" value="liegeplatz" <?= $current === 'liegeplatz' ? 'checked' : '' ?>>
             Liegeplatz
         </label>
 
-        <label style="margin-left:8px;">
-            <input type="radio" name="typ" value="boot"
-                    <?= (session('booking.typ') ?? '') === 'boot' ? 'checked' : '' ?>>
+        <label class="<?= $current === 'boot' ? 'active' : '' ?>">
+            <input type="radio" name="typ" value="boot" <?= $current === 'boot' ? 'checked' : '' ?>>
             Boot
         </label>
+    </div>
+</form>
 
-        <button type="submit" style="margin-left:16px;">Übernehmen</button>
-    </form>
+<!-- Filter -->
+<?php if (($booking['typ'] ?? 'liegeplatz') === 'liegeplatz'): ?>
+    <form method="post" action="<?= site_url('/buchung/filter') ?>" style="margin: 10px 0 14px;">
+        <?= csrf_field() ?>
+        <?php $only = (bool)($booking['filter']['only_available'] ?? false); ?>
+        <?php $q = (string)($booking['filter']['q'] ?? ''); ?>
 
-    <?php if ((session('booking.typ') ?? 'liegeplatz') === 'liegeplatz'): ?>
-        <form method="post" action="<?= site_url('/buchung/filter') ?>" style="margin-top:10px;">
-            <?= csrf_field() ?>
-
-            <?php $only = (bool)(session('booking.filter.only_available') ?? false); ?>
-            <?php $q = (string)(session('booking.filter.q') ?? ''); ?>
-
-            <label>
+        <div class="booking__controls" style="justify-content:flex-start;">
+            <label style="display:flex; align-items:center; gap:8px;">
                 <input type="checkbox" name="only_available" value="1" <?= $only ? 'checked' : '' ?>>
                 nur verfügbare
             </label>
 
-            <label style="margin-left:12px;">
-                Suche:
-                <input name="q" placeholder="z.B. A-3 oder 3" value="<?= esc($q) ?>">
-            </label>
+            <div class="field" style="min-width:240px;">
+                <label for="q_lp">Suche</label>
+                <input class="input" id="q_lp" name="q" placeholder="z.B. A-3 oder 3" value="<?= esc($q) ?>">
+            </div>
 
-            <button type="submit" style="margin-left:8px;">Filtern</button>
-        </form>
-    <?php endif; ?>
+            <button class="btn" type="submit">Filtern</button>
+        </div>
+    </form>
+<?php endif; ?>
 
-    <?php if ((session('booking.typ') ?? null) === 'boot'): ?>
-        <form method="post" action="<?= site_url('/buchung/boot-filter') ?>" style="margin-top:10px;">
-            <?= csrf_field() ?>
-            <?php $q = (string)(session('booking.boot_filter.q') ?? ''); ?>
+<?php if (($booking['typ'] ?? null) === 'boot'): ?>
+    <form method="post" action="<?= site_url('/buchung/boot-filter') ?>" style="margin: 10px 0 14px;">
+        <?= csrf_field() ?>
+        <?php $q = (string)($booking['boot_filter']['q'] ?? ''); ?>
 
-            <label>
-                Suche:
-                <input name="q" placeholder="z.B. Ruderboot oder Seerose" value="<?= esc($q) ?>">
-            </label>
+        <div class="booking__controls" style="justify-content:flex-start;">
+            <div class="field" style="min-width:260px;">
+                <label for="q_b">Suche</label>
+                <input class="input" id="q_b" name="q" placeholder="z.B. Ruderboot oder Seerose" value="<?= esc($q) ?>">
+            </div>
 
-            <button type="submit" style="margin-left:8px;">Filtern</button>
-        </form>
-    <?php endif; ?>
+            <button class="btn" type="submit">Filtern</button>
+        </div>
+    </form>
+<?php endif; ?>
 
-    <?php
-    $booking = session('booking') ?? [];
-    $typ = $booking['typ'] ?? 'liegeplatz';
-    ?>
+<div class="booking">
+    <div class="card" style="padding:16px;">
+        <div id="harbor-app"
+             data-typ="<?= esc($typ) ?>"
+             data-von="<?= esc($booking['von'] ?? '') ?>"
+             data-bis="<?= esc($booking['bis'] ?? '') ?>">
+        </div>
 
-    <!-- Hauptbereich -->
-    <div style="display:flex; gap:16px; margin-top:12px;">
-        <div style="flex:3; background:#eee; min-height:300px; padding:12px;">
+        <script>
+            window.__HARBOR_DATA__ = {
+                typ: <?= json_encode($typ) ?>,
+                liegeplaetze: <?= json_encode($liegeplaetze ?? []) ?>,
+                boote: <?= json_encode($boote ?? []) ?>,
+                selectedLiegeplaetze: <?= json_encode($booking['liegeplaetze'] ?? []) ?>,
+                selectedBoote: <?= json_encode($booking['boote'] ?? []) ?>
+            };
+        </script>
 
+        <!-- Optionaler Fallback: aktuelle Listenansicht (damit weiterhin nutzbar) -->
+        <div style="margin-top:14px;">
             <?php if ($typ === 'liegeplatz'): ?>
-                <h3>Liegeplätze</h3>
+                <h3 style="margin:0 0 10px;">Liegeplätze (Liste)</h3>
 
                 <?php if (empty($liegeplaetze)): ?>
-                    <p>Keine Liegeplätze gefunden. Filter anpassen oder zurücksetzen.</p>
+                    <p class="muted">Keine Liegeplätze gefunden.</p>
                 <?php else: ?>
-                    <ul>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Anleger</th>
+                            <th>Nr.</th>
+                            <th>Status</th>
+                            <th>Aktion</th>
+                        </tr>
+                        </thead>
+                        <tbody>
                         <?php
                         $selected = $booking['liegeplaetze'] ?? [];
                         $selectedInt = array_map('intval', $selected);
                         $lpModel = new \App\Models\LiegeplatzModel();
                         ?>
-
                         <?php foreach ($liegeplaetze as $lp): ?>
                             <?php
                             $isSelected = in_array((int)$lp['lid'], $selectedInt, true);
                             $label = $lpModel->getStatusLabel($lp['status']);
+
+                            $badgeClass = match ($lp['status']) {
+                                'verfuegbar' => 'badge--green',
+                                'gesperrt' => 'badge--red',
+                                'vermietet' => 'badge--orange',
+                                'belegt' => 'badge--blue',
+                                default => 'badge--gray',
+                            };
                             ?>
-
-                            <li style="margin-bottom:6px;">
-                                Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?>
-
-                                <?php if (!empty($lp['is_booked_in_range'])): ?>
-                                    <span class="status-badge status-im-zeitraum">im Zeitraum gebucht</span>
-                                <?php else: ?>
-                                    <span class="status-badge status-<?= esc($lp['status']) ?>">
-                                        <?= esc($label) ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <?php if (!empty($lp['is_available_in_range'])): ?>
-                                    <form method="post"
-                                          action="<?= site_url('/buchung/liegeplatz-toggle') ?>"
-                                          style="display:inline; margin-left:8px;">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="lid" value="<?= esc($lp['lid']) ?>">
-                                        <button type="submit">
-                                            <?= $isSelected ? 'Abwählen' : 'Auswählen' ?>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <span style="margin-left:8px; color:#777;">
-                                        <?= !empty($lp['is_booked_in_range']) ? 'im Zeitraum gebucht' : 'nicht verfügbar' ?>
-                                    </span>
-                                <?php endif; ?>
-                            </li>
+                            <tr>
+                                <td><?= esc($lp['anleger']) ?></td>
+                                <td><?= esc($lp['nummer']) ?></td>
+                                <td>
+                                    <?php if (!empty($lp['is_booked_in_range'])): ?>
+                                        <span class="badge badge--purple">im Zeitraum</span>
+                                    <?php else: ?>
+                                        <span class="badge <?= esc($badgeClass) ?>"><?= esc($label) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($lp['is_available_in_range'])): ?>
+                                        <form method="post" action="<?= site_url('/buchung/liegeplatz-toggle') ?>" style="margin:0;">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="lid" value="<?= esc($lp['lid']) ?>">
+                                            <button class="btn" type="submit" style="padding:8px 10px; border-radius:10px;">
+                                                <?= $isSelected ? 'Abwählen' : 'Auswählen' ?>
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span class="muted">nicht verfügbar</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
-                    </ul>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
 
             <?php else: ?>
-                <h3>Boote</h3>
+                <h3 style="margin:0 0 10px;">Boote (Liste)</h3>
 
                 <?php if (empty($boote)): ?>
-                    <p>Keine Boote gefunden. Filter anpassen oder zurücksetzen.</p>
+                    <p class="muted">Keine Boote gefunden.</p>
                 <?php else: ?>
-                    <ul>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Typ</th>
+                            <th>Status</th>
+                            <th>Aktion</th>
+                        </tr>
+                        </thead>
+                        <tbody>
                         <?php
                         $selected = $booking['boote'] ?? [];
                         $selectedInt = array_map('intval', $selected);
                         $bootModel = new \App\Models\BootModel();
                         ?>
-
                         <?php foreach ($boote as $b): ?>
                             <?php
                             $isSelected = in_array((int)$b['boid'], $selectedInt, true);
                             $label = $bootModel->getStatusLabel($b['status']);
+
+                            $badgeClass = match ($b['status']) {
+                                'verfuegbar' => 'badge--green',
+                                'gesperrt' => 'badge--red',
+                                'wartung' => 'badge--orange',
+                                'unterwegs' => 'badge--blue',
+                                default => 'badge--gray',
+                            };
                             ?>
-
-                            <li style="margin-bottom:6px;">
-                                <?= esc($b['name']) ?>
-                                <?php if (!empty($b['typ'])): ?>
-                                    (<?= esc($b['typ']) ?>)
-                                <?php endif; ?>
-
-                                <?php if (!empty($b['is_booked_in_range'])): ?>
-                                    <span class="status-badge status-im-zeitraum">im Zeitraum gebucht</span>
-                                <?php else: ?>
-                                    <span class="status-badge status-<?= esc($b['status']) ?>">
-                                        <?= esc($label) ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <?php if (!empty($b['is_available_in_range'])): ?>
-                                    <form method="post"
-                                          action="<?= site_url('/buchung/boot-toggle') ?>"
-                                          style="display:inline; margin-left:8px;">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="boid" value="<?= esc($b['boid']) ?>">
-                                        <button type="submit">
-                                            <?= $isSelected ? 'Abwählen' : 'Auswählen' ?>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <span style="margin-left:8px; color:#777;">
-                                        <?= !empty($b['is_booked_in_range']) ? 'im Zeitraum gebucht' : 'nicht verfügbar' ?>
-                                    </span>
-                                <?php endif; ?>
-                            </li>
+                            <tr>
+                                <td><?= esc($b['name']) ?></td>
+                                <td><?= esc($b['typ'] ?? '') ?></td>
+                                <td>
+                                    <?php if (!empty($b['is_booked_in_range'])): ?>
+                                        <span class="badge badge--purple">im Zeitraum</span>
+                                    <?php else: ?>
+                                        <span class="badge <?= esc($badgeClass) ?>"><?= esc($label) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($b['is_available_in_range'])): ?>
+                                        <form method="post" action="<?= site_url('/buchung/boot-toggle') ?>" style="margin:0;">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="boid" value="<?= esc($b['boid']) ?>">
+                                            <button class="btn" type="submit" style="padding:8px 10px; border-radius:10px;">
+                                                <?= $isSelected ? 'Abwählen' : 'Auswählen' ?>
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span class="muted">nicht verfügbar</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
-                    </ul>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
             <?php endif; ?>
-
         </div>
+    </div>
 
-        <div style="flex:1; border:1px solid #ccc; padding:12px;">
-            <h3>Ihre Buchung</h3>
+    <!-- Sidebar Ihre Buchung -->
+    <aside class="card sidebar">
+        <?php
+        $booking = session('booking') ?? [];
 
-            <?php if (!empty($booking)): ?>
-                <p>
-                    <strong>Von:</strong> <?= esc($booking['von'] ?? '') ?><br>
-                    <strong>Bis:</strong> <?= esc($booking['bis'] ?? '') ?><br>
-                    <strong>Typ:</strong> <?= esc($booking['typ'] ?? '') ?>
-                </p>
+        $von = $booking['von'] ?? '';
+        $bis = $booking['bis'] ?? '';
 
-                <?php if (($booking['typ'] ?? null) === 'liegeplatz'): ?>
-                    <?php if (!empty($selectedLiegeplaetze)): ?>
-                        <p><strong>Ausgewählte Liegeplätze:</strong></p>
-                        <ul>
-                            <?php foreach ($selectedLiegeplaetze as $lp): ?>
-                                <li>Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-                <?php endif; ?>
+        $selectedLids = array_map('intval', $booking['selected_lids'] ?? []);
+        $selectedBoids = array_map('intval', $booking['selected_boids'] ?? []);
+        $assignments = $booking['assignments'] ?? []; // lid => boid
 
-                <?php if (($booking['typ'] ?? null) === 'boot'): ?>
-                    <?php if (!empty($selectedBoote)): ?>
-                        <p><strong>Ausgewählte Boote:</strong></p>
-                        <ul>
-                            <?php foreach ($selectedBoote as $b): ?>
-                                <li><?= esc($b['name']) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-                <?php endif; ?>
+        // Lookups aus den bereits geladenen Arrays $liegeplaetze und $boote:
+        $lpById = [];
+        foreach (($liegeplaetze ?? []) as $lp) $lpById[(int)$lp['lid']] = $lp;
 
-                <?php
-                $hasSelection = false;
-                if (($booking['typ'] ?? null) === 'liegeplatz') {
-                    $hasSelection = !empty($booking['liegeplaetze'] ?? []);
-                } elseif (($booking['typ'] ?? null) === 'boot') {
-                    $hasSelection = !empty($booking['boote'] ?? []);
-                }
-                ?>
+        $bootById = [];
+        foreach (($boote ?? []) as $b) $bootById[(int)$b['boid']] = $b;
 
-                <form method="get" action="<?= site_url('/buchung/zusammenfassung') ?>">
-                    <button type="submit" <?= $hasSelection ? '' : 'disabled' ?>>
-                        Weiter
+        $hasSelection = !empty($selectedLids) || !empty($selectedBoids) || !empty($assignments);
+        ?>
+
+        <h3>Ihre Buchung</h3>
+
+        <?php if (!empty($booking) && $von && $bis): ?>
+            <div class="muted">
+                Zeitraum: <strong><?= esc($von) ?></strong> bis <strong><?= esc($bis) ?></strong>
+            </div>
+
+            <hr class="hr">
+
+            <h4 style="margin:0 0 8px;">Kombinationen (Boot → Liegeplatz)</h4>
+            <?php if (empty($assignments)): ?>
+                <p class="muted">Keine Kombinationen.</p>
+            <?php else: ?>
+                <ul style="margin:0 0 12px; padding-left:18px;">
+                    <?php foreach ($assignments as $lidStr => $boidVal): ?>
+                        <?php
+                        $lid = (int)$lidStr;
+                        $boid = (int)$boidVal;
+                        $lp = $lpById[$lid] ?? null;
+                        $bt = $bootById[$boid] ?? null;
+                        ?>
+                        <li>
+                            <?= $lp ? 'Liegeplatz ' . esc($lp['anleger']) . '-' . esc($lp['nummer']) : 'Liegeplatz #' . esc($lid) ?>
+                            ↔
+                            <?= $bt ? 'Boot ' . esc($bt['name']) : 'Boot #' . esc($boid) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <h4 style="margin:0 0 8px;">Einzel-Liegeplätze</h4>
+            <?php
+            $pairedLids = array_map('intval', array_keys($assignments));
+            $singleLids = array_values(array_diff($selectedLids, $pairedLids));
+            ?>
+            <?php if (empty($singleLids)): ?>
+                <p class="muted">Keine.</p>
+            <?php else: ?>
+                <ul style="margin:0 0 12px; padding-left:18px;">
+                    <?php foreach ($singleLids as $lid): ?>
+                        <?php $lp = $lpById[$lid] ?? null; ?>
+                        <li>
+                            <?= $lp ? 'Liegeplatz ' . esc($lp['anleger']) . '-' . esc($lp['nummer']) : 'Liegeplatz #' . esc($lid) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <h4 style="margin:0 0 8px;">Einzel-Boote</h4>
+            <?php
+            $pairedBoids = array_map('intval', array_values($assignments));
+            $singleBoids = array_values(array_diff($selectedBoids, $pairedBoids));
+            ?>
+            <?php if (empty($singleBoids)): ?>
+                <p class="muted">Keine.</p>
+            <?php else: ?>
+                <ul style="margin:0 0 12px; padding-left:18px;">
+                    <?php foreach ($singleBoids as $boid): ?>
+                        <?php $bt = $bootById[$boid] ?? null; ?>
+                        <li>
+                            <?= $bt ? 'Boot ' . esc($bt['name']) : 'Boot #' . esc($boid) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <div style="margin-top:14px;">
+                <form method="get" action="<?= site_url('/buchung/zusammenfassung') ?>" style="margin:0;">
+                    <button class="btn btn--block" type="submit" <?= $hasSelection ? '' : 'disabled' ?>>
+                        Weiter →
                     </button>
                 </form>
 
                 <?php if (!$hasSelection): ?>
-                    <p style="color:#777; font-size:0.9em;">
-                        Bitte mindestens <?= ($booking['typ'] ?? '') === 'boot' ? 'ein Boot' : 'einen Liegeplatz' ?> auswählen.
+                    <p class="muted" style="margin-top:10px; font-size:0.9em;">
+                        Bitte mindestens ein Element auswählen.
                     </p>
                 <?php endif; ?>
 
-                <form method="post" action="<?= site_url('/buchung/reset') ?>" style="display:inline;">
+                <form method="post" action="<?= site_url('/buchung/reset') ?>" style="margin-top:10px;">
                     <?= csrf_field() ?>
-                    <button type="submit" style="margin-left:8px;">Zurücksetzen</button>
+                    <button class="btn btn--block" type="submit">Zurücksetzen</button>
                 </form>
+            </div>
 
-            <?php else: ?>
-                <p>Bitte Zeitraum und Typ wählen.</p>
-                <button disabled>Weiter</button>
-            <?php endif; ?>
-        </div>
-    </div>
-</section>
+        <?php else: ?>
+            <div class="muted">Bitte Zeitraum wählen.</div>
+            <div style="margin-top:12px;">
+                <button class="btn btn--block" disabled>Weiter →</button>
+            </div>
+        <?php endif; ?>
+    </aside>
+</div>
+
+<script>
+    window.__HARBOR_DATA__ = {
+        liegeplaetze: <?= json_encode($liegeplaetze ?? []) ?>,
+        boote: <?= json_encode($boote ?? []) ?>,
+
+        // aus Session:
+        selected_lids: <?= json_encode(session('booking.selected_lids') ?? []) ?>,
+        selected_boids: <?= json_encode(session('booking.selected_boids') ?? []) ?>,
+        assignments: <?= json_encode(session('booking.assignments') ?? new stdClass()) ?>,
+    };
+</script>
 
 <?= $this->endSection() ?>

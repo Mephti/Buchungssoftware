@@ -1,92 +1,100 @@
-<!doctype html>
-<html lang="de">
-<head>
-    <meta charset="utf-8">
-    <title>Registrierung</title>
-</head>
-<body>
-<h1>Registrierung</h1>
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
 
-<?php if (!empty($error)): ?>
-    <p style="color:red;"><?= esc($error) ?></p>
-<?php endif; ?>
+<div class="card form-card" style="max-width: 760px;">
+    <h1>Registrierung</h1>
 
-<form method="post" action="<?= site_url('/register') ?>">
-    <?= csrf_field() ?>
+    <?php if (!empty($error)): ?>
+        <div class="alert alert--error"><?= esc($error) ?></div>
+    <?php endif; ?>
 
-    <div>
-        <label>Vorname*</label><br>
-        <input name="vorname" required value="<?= esc($old['vorname'] ?? '') ?>">
-    </div>
+    <form method="post" action="<?= site_url('/register') ?>">
+        <?= csrf_field() ?>
 
-    <div style="margin-top:8px;">
-        <label>Nachname*</label><br>
-        <input name="nachname" required value="<?= esc($old['nachname'] ?? '') ?>">
-    </div>
+        <?php $g = $old['geschlecht'] ?? ''; ?>
 
-    <div style="margin-top:8px;">
-        <label>Geburtsdatum</label><br>
-        <input type="date" name="geburtsdatum" value="<?= esc($old['geburtsdatum'] ?? '') ?>">
-    </div>
+        <div class="form-grid">
+            <div class="field">
+                <label for="vorname">Vorname*</label>
+                <input class="input" id="vorname" name="vorname" required value="<?= esc($old['vorname'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Geschlecht*</label><br>
-        <select name="geschlecht" required>
-            <?php $g = $old['geschlecht'] ?? ''; ?>
-            <option value="" <?= $g === '' ? 'selected' : '' ?>>Bitte wählen</option>
-            <option value="m" <?= $g === 'm' ? 'selected' : '' ?>>m</option>
-            <option value="w" <?= $g === 'w' ? 'selected' : '' ?>>w</option>
-            <option value="d" <?= $g === 'd' ? 'selected' : '' ?>>d</option>
-        </select>
-    </div>
+            <div class="field">
+                <label for="nachname">Nachname*</label>
+                <input class="input" id="nachname" name="nachname" required value="<?= esc($old['nachname'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Straße</label><br>
-        <input name="strasse" value="<?= esc($old['strasse'] ?? '') ?>">
-    </div>
+            <div class="field">
+                <label for="geburtsdatum">Geburtsdatum</label>
+                <input class="input" type="date" id="geburtsdatum" name="geburtsdatum" value="<?= esc($old['geburtsdatum'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Hausnr</label><br>
-        <input name="hausnr" value="<?= esc($old['hausnr'] ?? '') ?>">
-    </div>
+            <div class="field">
+                <label for="geschlecht">Geschlecht*</label>
+                <select id="geschlecht" name="geschlecht" required>
+                    <option value="" <?= $g === '' ? 'selected' : '' ?>>Bitte wählen</option>
+                    <option value="m" <?= $g === 'm' ? 'selected' : '' ?>>m</option>
+                    <option value="w" <?= $g === 'w' ? 'selected' : '' ?>>w</option>
+                    <option value="d" <?= $g === 'd' ? 'selected' : '' ?>>d</option>
+                </select>
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>PLZ</label><br>
-        <input name="plz" value="<?= esc($old['plz'] ?? '') ?>">
-    </div>
+            <div class="field">
+                <label for="strasse">Straße</label>
+                <input class="input" id="strasse" name="strasse" value="<?= esc($old['strasse'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Ort</label><br>
-        <input name="ort" value="<?= esc($old['ort'] ?? '') ?>">
-    </div>
+            <div class="field">
+                <label for="hausnr">Hausnr</label>
+                <input class="input" id="hausnr" name="hausnr" value="<?= esc($old['hausnr'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Telefon</label><br>
-        <input name="telefon" value="<?= esc($old['telefon'] ?? '') ?>">
-    </div>
+            <div class="field">
+                <label for="plz">PLZ</label>
+                <input class="input" id="plz" name="plz" value="<?= esc($old['plz'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>E-Mail*</label><br>
-        <input type="email" name="email" required value="<?= esc($old['email'] ?? '') ?>">
-    </div>
+            <div class="field">
+                <label for="ort">Ort</label>
+                <input class="input" id="ort" name="ort" value="<?= esc($old['ort'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Passwort* (min. 8 Zeichen)</label><br>
-        <input type="password" name="passwort" required>
-    </div>
+            <div class="field">
+                <label for="telefon">Telefon</label>
+                <input class="input" id="telefon" name="telefon" value="<?= esc($old['telefon'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:8px;">
-        <label>Passwort wiederholen*</label><br>
-        <input type="password" name="passwort2" required>
-    </div>
+            <div class="field">
+                <label for="email">E-Mail*</label>
+                <input class="input" type="email" id="email" name="email" required value="<?= esc($old['email'] ?? '') ?>">
+            </div>
 
-    <div style="margin-top:12px;">
-        <button type="submit">Registrieren</button>
-    </div>
-</form>
+            <div class="field">
+                <label for="passwort">Passwort* (min. 8 Zeichen)</label>
+                <input class="input" type="password" id="passwort" name="passwort" required>
+            </div>
 
-<p style="margin-top:12px;">
-    Schon ein Konto? <a href="<?= site_url('/login') ?>">Zum Login</a>
-</p>
-</body>
-</html>
+            <div class="field">
+                <label for="passwort2">Passwort wiederholen*</label>
+                <input class="input" type="password" id="passwort2" name="passwort2" required>
+            </div>
+
+            <div class="field full" style="margin-top:6px;">
+                <label style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" required>
+                    Ich habe die <a href="#">AGB</a> und <a href="#">Datenschutzerklärung</a> gelesen und akzeptiert.
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn--primary" type="submit">Weiter ▾</button>
+        </div>
+
+        <p class="muted" style="text-align:center; margin-top:10px;">
+            Bereits registriert? <a href="<?= site_url('/login') ?>">Zum Login</a>
+        </p>
+    </form>
+</div>
+
+<?= $this->endSection() ?>

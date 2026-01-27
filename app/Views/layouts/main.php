@@ -2,58 +2,92 @@
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title><?= esc($title ?? 'Buchungssoftware') ?></title>
-    <style>
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 0.9em;
-            border: 1px solid #ccc;
-            background: #fff;
-        }
-
-        .status-verfuegbar { border-color: #2e7d32; color: #2e7d32; }
-        .status-gesperrt   { border-color: #c62828; color: #c62828; }
-        .status-vermietet  { border-color: #ef6c00; color: #ef6c00; }
-        .status-belegt     { border-color: #1565c0; color: #1565c0; }
-        .status-im-zeitraum { border-color: #6a1b9a; color: #6a1b9a; }
-
-
-        .legend {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin: 8px 0 12px;
-        }
-    </style>
+    <title><?= esc($title ?? 'PlauerSee') ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="<?= base_url('css/app.css') ?>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@11.3.0/dist/gridstack.min.css">
 </head>
 <body>
 
-<header style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #ddd;">
-    <strong>Buchungssoftware</strong>
+<header class="header">
+    <div class="container header__inner">
+        <a class="brand" href="<?= site_url('/') ?>" aria-label="Zur Startseite">
+            <img src="<?= base_url('img/logo.png') ?>" alt="PlauerSee Logo">
+        </a>
 
-    <nav>
-        <?php if (session('isLoggedIn')): ?>
-            <span style="margin-right:12px;"><?= esc(session('name')) ?></span>
-            <a href="<?= site_url('/mein-konto') ?>">Mein Konto</a> |
-            <a href="<?= site_url('/meine-buchungen') ?>">Meine Buchungen</a> |
-            <a href="<?= site_url('/logout') ?>">Logout</a>
-        <?php else: ?>
-            <a href="<?= site_url('/login') ?>">Login</a> |
-            <a href="<?= site_url('/register') ?>">Registrierung</a>
-        <?php endif; ?>
-    </nav>
+        <div class="account">
+            <details>
+                <summary>
+                    <span aria-hidden="true">👤</span>
+                    Account
+                    <span aria-hidden="true">▾</span>
+                </summary>
+
+                <div class="account__menu card" role="menu" aria-label="Account Menü">
+                    <?php if (session('isLoggedIn')): ?>
+                        <div class="account__hint">
+                            Angemeldet als:<br>
+                            <strong><?= esc(session('name')) ?></strong>
+                        </div>
+                        <a role="menuitem" href="<?= site_url('/mein-konto') ?>">Mein Konto</a>
+                        <a role="menuitem" href="<?= site_url('/meine-buchungen') ?>">Meine Buchungen</a>
+                        <a role="menuitem" href="<?= site_url('/logout') ?>">Logout</a>
+                    <?php else: ?>
+                        <a role="menuitem" href="<?= site_url('/login') ?>">Login</a>
+                        <a role="menuitem" href="<?= site_url('/register') ?>">Registrierung</a>
+                    <?php endif; ?>
+                </div>
+            </details>
+        </div>
+    </div>
 </header>
 
-<main style="padding:16px;">
-    <?= $this->renderSection('content') ?>
+<main class="main">
+    <div class="container">
+        <?= $this->renderSection('content') ?>
+    </div>
 </main>
 
-<footer style="padding:12px 16px; border-top:1px solid #ddd; margin-top:24px; font-size:0.9em;">
-    &copy; <?= date('Y') ?> Buchungssoftware
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div>
+                <h4>Kontakt</h4>
+                <div><a href="#">Telefon</a></div>
+                <div><a href="#">E-Mail</a></div>
+            </div>
+
+            <div>
+                <h4>Social Media</h4>
+                <div class="social">
+                    <a href="#" aria-label="Facebook">f</a>
+                    <a href="#" aria-label="Instagram">◎</a>
+                </div>
+            </div>
+
+            <div>
+                <h4>Über uns</h4>
+                <div><a href="#">Team</a></div>
+                <div><a href="#">Standort</a></div>
+            </div>
+
+            <div>
+                <h4>Rechtliches</h4>
+                <div><a href="#">Impressum</a></div>
+                <div><a href="#">Datenschutz</a></div>
+            </div>
+        </div>
+
+        <div class="footer__brand">
+            <img src="<?= base_url('img/logo.png') ?>" alt="PlauerSee">
+        </div>
+    </div>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridstack@11.3.0/dist/gridstack-all.js"></script>
+<script src="<?= base_url('js/hafen-map.js') ?>"></script>
+<script src="<?= base_url('js/harbor-app.js') ?>"></script>
 
 </body>
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 20. Jan 2026 um 12:07
+-- Erstellungszeit: 02. Feb 2026 um 21:50
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -59,16 +59,9 @@ CREATE TABLE `boot_buchungen` (
   `von` date NOT NULL,
   `bis` date NOT NULL,
   `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
-  `created_at` datetime DEFAULT NULL
+  `created_at` datetime DEFAULT NULL,
+  `group_token` varchar(36) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Daten für Tabelle `boot_buchungen`
---
-
-INSERT INTO `boot_buchungen` (`bbid`, `boid`, `kid`, `von`, `bis`, `status`, `created_at`) VALUES
-(1, 5, 12, '1010-10-01', '1010-10-10', 'aktiv', '2026-01-13 12:15:20'),
-(2, 1, 12, '1010-10-01', '1010-10-10', 'aktiv', '2026-01-13 12:15:20');
 
 -- --------------------------------------------------------
 
@@ -128,14 +121,29 @@ INSERT INTO `liegeplaetze` (`lid`, `anleger`, `nummer`, `status`) VALUES
 (10, 'A', 10, 'verfuegbar'),
 (11, 'A', 11, 'verfuegbar'),
 (12, 'A', 12, 'verfuegbar'),
-(13, 'B', 1, 'verfuegbar'),
-(14, 'B', 2, 'gesperrt'),
-(15, 'B', 3, 'verfuegbar'),
-(16, 'B', 4, 'vermietet'),
-(17, 'B', 5, 'verfuegbar'),
-(18, 'B', 6, 'belegt'),
-(19, 'B', 7, 'verfuegbar'),
-(20, 'B', 8, 'verfuegbar');
+(13, 'A', 13, 'verfuegbar'),
+(14, 'A', 14, 'verfuegbar'),
+(15, 'A', 15, 'verfuegbar'),
+(16, 'A', 16, 'verfuegbar'),
+(17, 'A', 17, 'verfuegbar'),
+(18, 'B', 1, 'verfuegbar'),
+(19, 'B', 2, 'verfuegbar'),
+(20, 'B', 3, 'verfuegbar'),
+(21, 'B', 4, 'verfuegbar'),
+(22, 'B', 5, 'verfuegbar'),
+(23, 'B', 6, 'verfuegbar'),
+(24, 'B', 7, 'verfuegbar'),
+(25, 'B', 8, 'verfuegbar'),
+(26, 'B', 9, 'verfuegbar'),
+(27, 'B', 10, 'verfuegbar'),
+(28, 'B', 11, 'verfuegbar'),
+(29, 'B', 12, 'verfuegbar'),
+(30, 'B', 13, 'verfuegbar'),
+(31, 'B', 14, 'verfuegbar'),
+(32, 'B', 15, 'verfuegbar'),
+(33, 'B', 16, 'verfuegbar'),
+(34, 'B', 17, 'verfuegbar'),
+(35, 'B', 18, 'verfuegbar');
 
 -- --------------------------------------------------------
 
@@ -150,17 +158,16 @@ CREATE TABLE `liegeplatz_buchungen` (
   `von` date NOT NULL,
   `bis` date NOT NULL,
   `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
-  `created_at` datetime DEFAULT NULL
+  `created_at` datetime DEFAULT NULL,
+  `group_token` varchar(36) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `liegeplatz_buchungen`
 --
 
-INSERT INTO `liegeplatz_buchungen` (`bid`, `lid`, `kid`, `von`, `bis`, `status`, `created_at`) VALUES
-(1, 1, 12, '1010-10-01', '1010-10-10', 'aktiv', NULL),
-(2, 2, 12, '1010-10-01', '1010-10-10', 'aktiv', '2026-01-13 11:24:22'),
-(3, 3, 12, '1010-10-01', '1010-10-10', 'storniert', '2026-01-13 11:24:22');
+INSERT INTO `liegeplatz_buchungen` (`bid`, `lid`, `kid`, `von`, `bis`, `status`, `created_at`, `group_token`) VALUES
+(1, 1, 12, '2020-01-01', '2020-01-10', 'aktiv', '2026-02-02 20:01:33', NULL);
 
 -- --------------------------------------------------------
 
@@ -183,10 +190,11 @@ CREATE TABLE `migrations` (
 --
 
 INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`, `batch`) VALUES
-(1, '2026-01-12-000001', 'App\\Database\\Migrations\\CreateLiegeplaetze', 'default', 'App', 1768294184, 1),
-(2, '2026-01-13-000002', 'App\\Database\\Migrations\\CreateLiegeplatzBuchungen', 'default', 'App', 1768301752, 2),
-(3, '2026-01-13-000003', 'App\\Database\\Migrations\\CreateBoote', 'default', 'App', 1768304007, 3),
-(4, '2026-01-13-000004', 'App\\Database\\Migrations\\CreateBootBuchungen', 'default', 'App', 1768304007, 3);
+(6, '2026-01-12-000001', 'App\\Database\\Migrations\\CreateLiegeplaetze', 'default', 'App', 1769516376, 1),
+(7, '2026-01-13-000002', 'App\\Database\\Migrations\\CreateLiegeplatzBuchungen', 'default', 'App', 1769516376, 1),
+(8, '2026-01-13-000003', 'App\\Database\\Migrations\\CreateBoote', 'default', 'App', 1769516376, 1),
+(9, '2026-01-13-000004', 'App\\Database\\Migrations\\CreateBootBuchungen', 'default', 'App', 1769516376, 1),
+(10, '2026-01-27-000010', 'App\\Database\\Migrations\\AddGroupTokenToBookings', 'default', 'App', 1769516376, 1);
 
 -- --------------------------------------------------------
 
@@ -278,7 +286,7 @@ ALTER TABLE `boote`
 -- AUTO_INCREMENT für Tabelle `boot_buchungen`
 --
 ALTER TABLE `boot_buchungen`
-  MODIFY `bbid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `bbid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `kunden`
@@ -290,19 +298,19 @@ ALTER TABLE `kunden`
 -- AUTO_INCREMENT für Tabelle `liegeplaetze`
 --
 ALTER TABLE `liegeplaetze`
-  MODIFY `lid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `lid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT für Tabelle `liegeplatz_buchungen`
 --
 ALTER TABLE `liegeplatz_buchungen`
-  MODIFY `bid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `bid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT für Tabelle `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT für Tabelle `mitarbeiter`

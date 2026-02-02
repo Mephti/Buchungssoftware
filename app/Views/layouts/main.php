@@ -32,7 +32,9 @@
 <body>
 
 <header style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #ddd;">
-    <strong>Buchungssoftware</strong>
+    <a class="brand" href="<?= site_url('/') ?>" aria-label="Startseite">
+        <img src="<?= base_url('img/logo.png') ?>" alt="Plauer See">
+    </a>
 
     <nav>
         <?php if (session('isLoggedIn')): ?>
@@ -47,7 +49,7 @@
     </nav>
 </header>
 
-<main style="padding:16px;">
+<main class="container" style="padding:16px 0;">
     <?= $this->renderSection('content') ?>
 </main>
 

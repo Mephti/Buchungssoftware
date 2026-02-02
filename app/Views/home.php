@@ -1,13 +1,30 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<h1>Willkommen am Plauer See</h1>
+<section class="platzhalter">
+    <div class="platzhalter__image" aria-label="Hafenansicht">
+        <img src="<?= base_url('img/cover.webp') ?>" alt="Hafen am Plauer See">
+    </div>
 
-<p>Buche bequem online einen Liegeplatz oder ein Boot.</p>
+    <div class="platzhalter__content">
+        <div class="platzhalter__meta">
+            <div></div>
+            <div class="rating" aria-label="Bewertung 4,8 von 5">
+                <span class="star" aria-hidden="true"></span>
+                4,8 / 5
+            </div>
+        </div>
 
-<p>
-    <a href="#buchung"><button>Buchung starten</button></a>
-</p>
+        <h1>Bootsverleih<br>am Plauer See</h1>
+
+        <p>
+            Buche bequem online einen Liegeplatz oder ein Boot.
+            Wähle Zeitraum, sieh die Verfügbarkeit und schließe die Buchung direkt ab.
+        </p>
+
+        <a class="btn btn--primary" href="#buchung">Buchung ▾</a>
+    </div>
+</section>
 
 <hr>
 
@@ -37,8 +54,8 @@
     $booking = session('booking') ?? [];
     ?>
 
-    <div style="display:flex; gap:16px; margin-top:12px;">
-        <!-- Links: Drag & Drop -->
+    <div class="booking" style="margin-top:12px;">
+    <!-- Links: Drag & Drop -->
         <div style="flex:3; min-height:300px; padding:12px;" class="card">
             <h3>Drag & Drop</h3>
 
@@ -89,7 +106,7 @@
         </div>
 
         <!-- Rechts: Buchungsübersicht bleibt -->
-        <div style="flex:1; border:1px solid #ccc; padding:12px;">
+        <aside id="bookingSidebar" class="card sidebar">
             <h3>Ihre Buchung</h3>
 
             <?php if (!empty($booking)): ?>
@@ -131,7 +148,7 @@
                 <p>Bitte Zeitraum wählen.</p>
                 <button disabled>Weiter</button>
             <?php endif; ?>
-        </div>
+        </aside>
     </div>
 </section>
 

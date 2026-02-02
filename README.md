@@ -31,8 +31,22 @@ In Settings → PHP:
 ### Composer Komponenten installieren
 
 PHPStorm Terminal anklicken:
-- composer install
+- "composer install"
+- Im Fehlerfall muss wahrscheinlich "composer update" ausgeführt werden.
+   - Sollte dies auch fehlschlagen, in der php.ini zuerst "extension=intl" und "extension=zip" einkommentieren
 
-### env einrichten
+### env im Projekt einrichten
 
 env → umbenennen in .env (falls .env nicht existiert)
+
+Die folgenden Einträge sollten einkommentiert werden:
+ database.default.hostname = localhost
+ database.default.database = plauersee
+ database.default.username = root
+ database.default.password =
+ database.default.DBDriver = MySQLi
+ database.default.port = 3306
+
+ ### Datenbank laden
+ In phpMyAdmin eine Datenbank namens "plauersee" erstellen.
+ Datenbank auswählen und im Reiter "Importieren" aus dem Projektordner app/Database/Exports/plauersee.sql laden.

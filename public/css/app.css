@@ -364,6 +364,12 @@ select:focus{
     padding: 3px 6px;
     border-radius: 999px;
     border: 1px solid rgba(15,23,42,.12);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.dock-slot:hover .dock-slot__label{
+    opacity: 1;
 }
 
 .dock-slot.is-unavailable{

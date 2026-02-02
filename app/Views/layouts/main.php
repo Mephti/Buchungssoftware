@@ -86,7 +86,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gridstack@11.3.0/dist/gridstack-all.js"></script>
+
+<!-- Map (setzt window.__HAFEN_SLOTS__) -->
 <script src="<?= base_url('js/hafen-map.js') ?>"></script>
+
+<!-- App (liest window.__HARBOR_DATA__ + window.__HAFEN_SLOTS__) -->
 <script src="<?= base_url('js/harbor-app.js') ?>"></script>
 
 </body>

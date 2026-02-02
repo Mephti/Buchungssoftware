@@ -76,11 +76,6 @@
                 }
                 return m;
             },
-            boatById() {
-                const m = new Map();
-                for (const b of this.boote) m.set(parseInt(b.boid, 10), b);
-                return m;
-            },
         },
 
         mounted() {
@@ -97,7 +92,7 @@
 
             <div style="position:relative; margin-top:12px; border-radius:16px; overflow:hidden; border:1px solid #e5e7eb;">
               <img src="/img/anlieger.png" alt="Anleger" style="width:100%; display:block;">
-              <div id="overlay" style="position:absolute; inset:0;"></div>
+              <div id="overlay" style="position:absolute; inset:0; z-index:10;"></div>
             </div>
 
             <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
@@ -147,8 +142,7 @@
           .badge--blue { border-color:#2563eb; color:#2563eb; }
           .badge--orange { border-color:#ea580c; color:#ea580c; }
 
-          /* Slots: nur Klick/Drop-Flächen, keine Texte */
-          .dock-slot { position:absolute; border-radius:10px; border:2px solid rgba(37,99,235,0); background:rgba(37,99,235,0); cursor:pointer; pointer-events:auto; }
+          .dock-slot { position:absolute; border-radius:10px; border:2px solid rgba(37,99,235,0); background:rgba(37,99,235,0); cursor:pointer; pointer-events:auto; z-index:11; }
           .dock-slot:hover { border-color: rgba(37,99,235,.55); background: rgba(37,99,235,.08); }
           .dock-slot.na { cursor:not-allowed; opacity:.55; }
           .dock-slot.selected { border-color: rgba(37,99,235,.9); background: rgba(37,99,235,.14); }
@@ -170,6 +164,45 @@
                 if (!overlay) return;
                 overlay.innerHTML = "";
 
+                // ✅ FIX 1): Drag&Drop Events am Overlay delegieren (robust gegen Overlays/Hit-Testing)
+                if (!overlay.__dndBound) {
+                    overlay.__dndBound = true;
+                    const self = this;
+
+                    overlay.addEventListener("dragover", (e) => {
+                        const slotEl = e.target.closest ? e.target.closest(".dock-slot") : null;
+                        if (!slotEl) return;
+                        if (slotEl.classList.contains("na")) return;
+
+                        // entscheidend: ohne preventDefault bleibt es bei 🚫
+                        e.preventDefault();
+                        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+                    });
+
+                    overlay.addEventListener("drop", (e) => {
+                        const slotEl = e.target.closest ? e.target.closest(".dock-slot") : null;
+                        if (!slotEl) return;
+                        if (slotEl.classList.contains("na")) return;
+
+                        e.preventDefault();
+
+                        const lid = parseInt(slotEl.dataset.lid || "0", 10);
+                        if (!lid) return;
+
+                        let boid = 0;
+                        try {
+                            boid = parseInt(e.dataTransfer?.getData("text/plain") || "0", 10);
+                        } catch (_) {
+                            boid = 0;
+                        }
+
+                        if (!boid) boid = self.draggingBoid || 0;
+                        if (!boid) return;
+
+                        post("/buchung/assign", { lid, boid, mode: "attach" });
+                    });
+                }
+
                 for (const slot of this.map) {
                     const lp = this.lpByKey.get(`${slot.anleger}-${slot.nummer}`);
                     if (!lp) continue;
@@ -182,6 +215,8 @@
 
                     const div = document.createElement("div");
                     div.className = "dock-slot";
+                    div.dataset.lid = String(lid);
+
                     div.style.left = `${slot.x}%`;
                     div.style.top = `${slot.y}%`;
                     div.style.width = `${slot.w}%`;
@@ -191,39 +226,13 @@
                     if (isSelected) div.classList.add("selected");
                     if (assignedBoid) div.classList.add("assigned");
 
-                    // Klick = Liegeplatz einzeln togglen (nur wenn verfügbar)
                     div.addEventListener("click", (e) => {
                         e.preventDefault();
                         if (!isAvail) return;
                         post("/buchung/liegeplatz-toggle", { lid });
                     });
 
-                    // Drop-Zone für Boote: dragover MUSS preventDefault, sonst gibt es keinen drop
-                    div.addEventListener("dragover", (e) => {
-                        if (!isAvail) return;
-                        e.preventDefault();
-                        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-                    });
-
-                    div.addEventListener("drop", (e) => {
-                        if (!isAvail) return;
-                        e.preventDefault();
-
-                        // Stabil: boid aus dataTransfer holen
-                        let boid = 0;
-                        try {
-                            boid = parseInt(e.dataTransfer?.getData("text/plain") || "0", 10);
-                        } catch (_) {
-                            boid = 0;
-                        }
-
-                        // Fallback (falls Browser kein dataTransfer liefert)
-                        if (!boid) boid = this.draggingBoid || 0;
-
-                        if (!boid) return;
-
-                        post("/buchung/assign", { lid, boid, mode: "attach" });
-                    });
+                    // ❌ keine dragover/drop Listener mehr pro Slot (Delegation macht das zuverlässig)
 
                     overlay.appendChild(div);
                 }
@@ -251,8 +260,6 @@
 
                         div.addEventListener("dragstart", (e) => {
                             this.draggingBoid = boid;
-
-                            // Stabilität: dataTransfer setzen
                             if (e.dataTransfer) {
                                 e.dataTransfer.setData("text/plain", String(boid));
                                 e.dataTransfer.effectAllowed = "move";
@@ -276,7 +283,6 @@
             </div>
           `;
 
-                    // Klick = Boot einzeln togglen (nur wenn verfügbar)
                     div.addEventListener("click", (e) => {
                         e.preventDefault();
                         if (!isAvail) return;

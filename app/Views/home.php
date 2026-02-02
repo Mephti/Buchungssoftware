@@ -3,12 +3,11 @@
 
 <?php
 $booking = session('booking') ?? [];
-$typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
+$typ = $booking['typ'] ?? 'liegeplatz';
 ?>
 
 <section class="platzhalter">
     <div class="platzhalter__image" aria-label="Hafenansicht">
-        <!-- Du kannst später ein echtes Bild nutzen (public/img/platzhalter.jpg) -->
         <img src="<?= base_url('img/cover.webp') ?>" alt="Hafen am Plauer See"
              onerror="this.style.display='none'; this.parentElement.style.minHeight='320px';">
     </div>
@@ -116,17 +115,7 @@ $typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
              data-bis="<?= esc($booking['bis'] ?? '') ?>">
         </div>
 
-        <script>
-            window.__HARBOR_DATA__ = {
-                typ: <?= json_encode($typ) ?>,
-                liegeplaetze: <?= json_encode($liegeplaetze ?? []) ?>,
-                boote: <?= json_encode($boote ?? []) ?>,
-                selectedLiegeplaetze: <?= json_encode($booking['liegeplaetze'] ?? []) ?>,
-                selectedBoote: <?= json_encode($booking['boote'] ?? []) ?>
-            };
-        </script>
-
-        <!-- Optionaler Fallback: aktuelle Listenansicht (damit weiterhin nutzbar) -->
+        <!-- Optionaler Fallback: aktuelle Listenansicht -->
         <div style="margin-top:14px;">
             <?php if ($typ === 'liegeplatz'): ?>
                 <h3 style="margin:0 0 10px;">Liegeplätze (Liste)</h3>
@@ -267,9 +256,8 @@ $typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
 
         $selectedLids = array_map('intval', $booking['selected_lids'] ?? []);
         $selectedBoids = array_map('intval', $booking['selected_boids'] ?? []);
-        $assignments = $booking['assignments'] ?? []; // lid => boid
+        $assignments = $booking['assignments'] ?? [];
 
-        // Lookups aus den bereits geladenen Arrays $liegeplaetze und $boote:
         $lpById = [];
         foreach (($liegeplaetze ?? []) as $lp) $lpById[(int)$lp['lid']] = $lp;
 
@@ -320,9 +308,7 @@ $typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
                 <ul style="margin:0 0 12px; padding-left:18px;">
                     <?php foreach ($singleLids as $lid): ?>
                         <?php $lp = $lpById[$lid] ?? null; ?>
-                        <li>
-                            <?= $lp ? 'Liegeplatz ' . esc($lp['anleger']) . '-' . esc($lp['nummer']) : 'Liegeplatz #' . esc($lid) ?>
-                        </li>
+                        <li><?= $lp ? 'Liegeplatz ' . esc($lp['anleger']) . '-' . esc($lp['nummer']) : 'Liegeplatz #' . esc($lid) ?></li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -338,9 +324,7 @@ $typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
                 <ul style="margin:0 0 12px; padding-left:18px;">
                     <?php foreach ($singleBoids as $boid): ?>
                         <?php $bt = $bootById[$boid] ?? null; ?>
-                        <li>
-                            <?= $bt ? 'Boot ' . esc($bt['name']) : 'Boot #' . esc($boid) ?>
-                        </li>
+                        <li><?= $bt ? 'Boot ' . esc($bt['name']) : 'Boot #' . esc($boid) ?></li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -373,12 +357,11 @@ $typ = $booking['typ'] ?? 'liegeplatz'; // bleibt fürs harbor-app / JS
     </aside>
 </div>
 
+<!-- NUR EINMAL, und exakt die Keys, die harbor-app.js nutzt -->
 <script>
     window.__HARBOR_DATA__ = {
         liegeplaetze: <?= json_encode($liegeplaetze ?? []) ?>,
         boote: <?= json_encode($boote ?? []) ?>,
-
-        // aus Session:
         selected_lids: <?= json_encode(session('booking.selected_lids') ?? []) ?>,
         selected_boids: <?= json_encode(session('booking.selected_boids') ?? []) ?>,
         assignments: <?= json_encode(session('booking.assignments') ?? new stdClass()) ?>,

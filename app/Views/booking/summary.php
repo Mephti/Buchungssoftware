@@ -25,6 +25,15 @@
     <?php endif; ?>
 <?php endif; ?>
 
+<?php if (!empty($selectedBoote)): ?>
+    <h3>Ausgewählte Boote</h3>
+    <ul>
+        <?php foreach ($selectedBoote as $b): ?>
+            <li><?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
+
 <?php if ($typ === 'boot'): ?>
     <h3>Ausgewählte Boote</h3>
     <?php if (empty($items)): ?>

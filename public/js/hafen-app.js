@@ -10,6 +10,7 @@
                 boats: window.__BOATS__ || [],
                 slots: window.__HAFEN_SLOTS__ || [],
                 slotMeta: window.__SLOT_META__ || {},   // key => { lid, available, bookedInRange, selected }
+                selectedBoats: window.__SELECTED_BOATS__ || [],
                 draggingBoat: null,
             };
         },
@@ -71,12 +72,24 @@
                     return;
                 }
 
+                const boat = this.draggingBoat;
+
                 // ✅ Wir speichern (wie bisher) über den bestehenden Endpoint:
                 // /buchung/liegeplatz-toggle  (Session "booking.liegeplaetze")
-                await this.postToggleLiegeplatz(meta.lid);
+                await this.postToggleLiegeplatz(meta.lid, false);
+
+                if (boat && boat.boid && !this.isBoatSelected(boat.boid)) {
+                    await this.postToggleBoot(boat.boid, false);
+                }
+
+                this.reloadToBooking();
             },
 
-            async postToggleLiegeplatz(lid) {
+            isBoatSelected(boid) {
+                return this.selectedBoats.includes(Number(boid));
+            },
+
+            async postToggleLiegeplatz(lid, shouldReload = true) {
                 const url = window.__TOGGLE_LP_URL__;
                 const csrfName = window.__CSRF_NAME__;
                 const csrfHash = window.__CSRF_HASH__;
@@ -93,14 +106,46 @@
                         credentials: 'same-origin',
                     });
 
-                    // Wir reloaden bewusst, damit rechts die Buchungsübersicht (PHP) garantiert aktuell ist.
-                    // (CI4 CSRF Hash kann sich ändern, daher ist Reload die robuste Variante.)
-                    window.location.hash = '#buchung';
-                    window.location.reload();
+                    if (shouldReload) {
+                        this.reloadToBooking();
+                    }
                 } catch (e) {
                     console.error(e);
                     alert('Speichern fehlgeschlagen (Netzwerk/Server).');
                 }
+            },
+
+            async postToggleBoot(boid, shouldReload = true) {
+                const url = window.__TOGGLE_BOOT_URL__;
+                const csrfName = window.__CSRF_NAME__;
+                const csrfHash = window.__CSRF_HASH__;
+
+                const body = new URLSearchParams();
+                body.set('boid', String(boid));
+                if (csrfName && csrfHash) body.set(csrfName, csrfHash);
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                        body: body.toString(),
+                        credentials: 'same-origin',
+                    });
+
+                    if (shouldReload) {
+                        this.reloadToBooking();
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Speichern fehlgeschlagen (Netzwerk/Server).');
+                }
+            },
+
+            reloadToBooking() {
+                // Wir reloaden bewusst, damit rechts die Buchungsübersicht (PHP) garantiert aktuell ist.
+                // (CI4 CSRF Hash kann sich ändern, daher ist Reload die robuste Variante.)
+                window.location.hash = '#buchung';
+                window.location.reload();
             }
         }
     }).mount('#hafenApp');

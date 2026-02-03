@@ -107,11 +107,21 @@ class BookingController extends BaseController
                 ->orderBy('nummer', 'ASC')
                 ->findAll();
 
+            $selectedBoote = [];
+            $selectedBoids = $booking['boote'] ?? [];
+            if (!empty($selectedBoids)) {
+                $bootModel = new \App\Models\BootModel();
+                $selectedBoote = $bootModel->whereIn('boid', $selectedBoids)
+                    ->orderBy('name', 'ASC')
+                    ->findAll();
+            }
+
             return view('booking/summary', [
                 'typ' => 'liegeplatz',
                 'von' => $von,
                 'bis' => $bis,
                 'items' => $items,
+                'selectedBoote' => $selectedBoote,
                 'error' => session()->getFlashdata('error'),
             ]);
         }
@@ -161,6 +171,7 @@ class BookingController extends BaseController
             if (empty($selectedIds)) return redirect()->to('/#buchung');
 
             $buchungModel = new \App\Models\LiegeplatzBuchungModel();
+            $bootBuchungModel = new \App\Models\BootBuchungModel();
 
             // Kollisionen prüfen
             $bookedLids = $buchungModel->findBookedLidsForRange($von, $bis);
@@ -183,6 +194,31 @@ class BookingController extends BaseController
                     'status' => 'aktiv',
                     'created_at' => $now,
                 ]);
+            }
+
+            $selectedBoids = $booking['boote'] ?? [];
+            if (!empty($selectedBoids)) {
+                $bookedBoids = $bootBuchungModel->findBookedBoidsForRange($von, $bis);
+                $bookedSetBoote = array_flip(array_map('intval', $bookedBoids));
+
+                foreach ($selectedBoids as $boid) {
+                    $boid = (int)$boid;
+                    if (isset($bookedSetBoote[$boid])) {
+                        return redirect()->to('/buchung/zusammenfassung')
+                            ->with('error', 'Mindestens ein ausgewähltes Boot ist im Zeitraum nicht mehr verfügbar.');
+                    }
+                }
+
+                foreach ($selectedBoids as $boid) {
+                    $bootBuchungModel->insert([
+                        'boid' => (int)$boid,
+                        'kid' => $kid,
+                        'von' => $von,
+                        'bis' => $bis,
+                        'status' => 'aktiv',
+                        'created_at' => $now,
+                    ]);
+                }
             }
 
             session()->remove('booking');

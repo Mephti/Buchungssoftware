@@ -125,6 +125,15 @@
                     </ul>
                 <?php endif; ?>
 
+                <?php if (!empty($selectedBoote)): ?>
+                    <p><strong>Ausgewählte Boote:</strong></p>
+                    <ul>
+                        <?php foreach ($selectedBoote as $b): ?>
+                            <li><?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+
                 <?php
                 $hasSelection = !empty($booking['liegeplaetze'] ?? []);
                 ?>
@@ -162,6 +171,7 @@
 <?php
 $booking = session('booking') ?? [];
 $selectedLids = array_map('intval', $booking['liegeplaetze'] ?? []);
+$selectedBoids = array_map('intval', $booking['boote'] ?? []);
 
 // SlotMeta für Vue: key "A-1" => lid, available, selected
 $slotMeta = [];
@@ -195,8 +205,10 @@ foreach (($boote ?? []) as $b) {
     window.__SLOT_META__ = <?= json_encode($slotMeta, JSON_UNESCAPED_UNICODE) ?>;
 
     window.__TOGGLE_LP_URL__ = <?= json_encode(site_url('/buchung/liegeplatz-toggle')) ?>;
+    window.__TOGGLE_BOOT_URL__ = <?= json_encode(site_url('/buchung/boot-toggle')) ?>;
     window.__CSRF_NAME__ = <?= json_encode(csrf_token()) ?>;
     window.__CSRF_HASH__ = <?= json_encode(csrf_hash()) ?>;
+    window.__SELECTED_BOATS__ = <?= json_encode($selectedBoids, JSON_UNESCAPED_UNICODE) ?>;
 </script>
 
 <script src="<?= base_url('js/hafen-app.js') ?>"></script>

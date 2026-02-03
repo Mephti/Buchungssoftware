@@ -19,7 +19,13 @@
     <?php else: ?>
         <ul>
             <?php foreach ($items as $lp): ?>
-                <li>Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?></li>
+                <li>
+                    Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?>
+                    · Kosten/Tag: <?= esc($lp['kosten_pt'] ?? 0) ?>
+                    <?php if (!empty($daysCount)): ?>
+                        · Gesamt: <?= esc($lp['kosten_total'] ?? 0) ?>
+                    <?php endif; ?>
+                </li>
             <?php endforeach; ?>
         </ul>
     <?php endif; ?>
@@ -29,7 +35,13 @@
     <h3>Ausgewählte Boote</h3>
     <ul>
         <?php foreach ($selectedBoote as $b): ?>
-            <li><?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?></li>
+            <li>
+                <?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?>
+                · Kosten/Tag: <?= esc($b['kosten_pt'] ?? 0) ?>
+                <?php if (!empty($daysCount)): ?>
+                    · Gesamt: <?= esc($b['kosten_total'] ?? 0) ?>
+                <?php endif; ?>
+            </li>
         <?php endforeach; ?>
     </ul>
 <?php endif; ?>
@@ -41,10 +53,28 @@
     <?php else: ?>
         <ul>
             <?php foreach ($items as $b): ?>
-                <li><?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?></li>
+                <li>
+                    <?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?>
+                    · Kosten/Tag: <?= esc($b['kosten_pt'] ?? 0) ?>
+                    <?php if (!empty($daysCount)): ?>
+                        · Gesamt: <?= esc($b['kosten_total'] ?? 0) ?>
+                    <?php endif; ?>
+                </li>
             <?php endforeach; ?>
         </ul>
     <?php endif; ?>
+<?php endif; ?>
+
+<?php if (!empty($daysCount)): ?>
+    <h3>Kosten</h3>
+    <p>
+        Liegeplatz gesamt (<?= esc($daysCount) ?> <?= $daysCount === 1 ? 'Tag' : 'Tage' ?>):
+        <?= esc($kostenLiegeplatzTotal ?? 0) ?>
+    </p>
+    <p>
+        Boot gesamt (<?= esc($daysCount) ?> <?= $daysCount === 1 ? 'Tag' : 'Tage' ?>):
+        <?= esc($kostenBootTotal ?? 0) ?>
+    </p>
 <?php endif; ?>
 
 <form method="post" action="<?= site_url('/buchung/abschliessen') ?>">

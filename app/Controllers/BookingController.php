@@ -4,6 +4,31 @@ namespace App\Controllers;
 
 class BookingController extends BaseController
 {
+    private function calculateDays(string $von, string $bis): int
+    {
+        $von = trim($von);
+        $bis = trim($bis);
+        if ($von === '' || $bis === '') {
+            return 0;
+        }
+
+        $start = \DateTimeImmutable::createFromFormat('Y-m-d', $von);
+        $end = \DateTimeImmutable::createFromFormat('Y-m-d', $bis);
+        if ($start && $end && $start->format('Y-m-d') === $von && $end->format('Y-m-d') === $bis) {
+            if ($end < $start) {
+                return 0;
+            }
+            return $start->diff($end)->days + 1;
+        }
+
+        $startTs = strtotime($von);
+        $endTs = strtotime($bis);
+        if ($startTs === false || $endTs === false || $endTs < $startTs) {
+            return 0;
+        }
+        return (int)floor(($endTs - $startTs) / 86400) + 1;
+    }
+
     public function select()
     {
         $von = $this->request->getPost('von');
@@ -97,6 +122,10 @@ class BookingController extends BaseController
             return redirect()->to('/#buchung');
         }
 
+        $tage = $this->calculateDays((string)$von, (string)$bis);
+        $kostenLiegeplatzTotal = 0;
+        $kostenBootTotal = 0;
+
         if ($typ === 'liegeplatz') {
             $selectedIds = $booking['liegeplaetze'] ?? [];
             if (empty($selectedIds)) return redirect()->to('/#buchung');
@@ -107,6 +136,14 @@ class BookingController extends BaseController
                 ->orderBy('nummer', 'ASC')
                 ->findAll();
 
+            foreach ($items as &$lp) {
+                $kostenPt = (int)($lp['kosten_pt'] ?? 0);
+                $lp['kosten_pt'] = $kostenPt;
+                $lp['kosten_total'] = $kostenPt * $tage;
+                $kostenLiegeplatzTotal += $lp['kosten_total'];
+            }
+            unset($lp);
+
             $selectedBoote = [];
             $selectedBoids = $booking['boote'] ?? [];
             if (!empty($selectedBoids)) {
@@ -114,6 +151,13 @@ class BookingController extends BaseController
                 $selectedBoote = $bootModel->whereIn('boid', $selectedBoids)
                     ->orderBy('name', 'ASC')
                     ->findAll();
+                foreach ($selectedBoote as &$b) {
+                    $kostenPt = (int)($b['kosten_pt'] ?? 0);
+                    $b['kosten_pt'] = $kostenPt;
+                    $b['kosten_total'] = $kostenPt * $tage;
+                    $kostenBootTotal += $b['kosten_total'];
+                }
+                unset($b);
             }
 
             return view('booking/summary', [
@@ -122,6 +166,9 @@ class BookingController extends BaseController
                 'bis' => $bis,
                 'items' => $items,
                 'selectedBoote' => $selectedBoote,
+                'daysCount' => $tage,
+                'kostenLiegeplatzTotal' => $kostenLiegeplatzTotal,
+                'kostenBootTotal' => $kostenBootTotal,
                 'error' => session()->getFlashdata('error'),
             ]);
         }
@@ -135,11 +182,22 @@ class BookingController extends BaseController
                 ->orderBy('name', 'ASC')
                 ->findAll();
 
+            foreach ($items as &$b) {
+                $kostenPt = (int)($b['kosten_pt'] ?? 0);
+                $b['kosten_pt'] = $kostenPt;
+                $b['kosten_total'] = $kostenPt * $tage;
+                $kostenBootTotal += $b['kosten_total'];
+            }
+            unset($b);
+
             return view('booking/summary', [
                 'typ' => 'boot',
                 'von' => $von,
                 'bis' => $bis,
                 'items' => $items,
+                'daysCount' => $tage,
+                'kostenBootTotal' => $kostenBootTotal,
+                'kostenLiegeplatzTotal' => $kostenLiegeplatzTotal,
                 'error' => session()->getFlashdata('error'),
             ]);
         }
@@ -172,6 +230,7 @@ class BookingController extends BaseController
 
             $buchungModel = new \App\Models\LiegeplatzBuchungModel();
             $bootBuchungModel = new \App\Models\BootBuchungModel();
+            $tage = $this->calculateDays($von, $bis);
 
             // Kollisionen prüfen
             $bookedLids = $buchungModel->findBookedLidsForRange($von, $bis);
@@ -185,7 +244,15 @@ class BookingController extends BaseController
                 }
             }
 
+            $lpModel = new \App\Models\LiegeplatzModel();
+            $lpRows = $lpModel->select('lid, kosten_pt')->whereIn('lid', $selectedIds)->findAll();
+            $lpKostenById = [];
+            foreach ($lpRows as $row) {
+                $lpKostenById[(int)$row['lid']] = (int)($row['kosten_pt'] ?? 0);
+            }
+
             foreach ($selectedIds as $lid) {
+                $kostenPt = $lpKostenById[(int)$lid] ?? 0;
                 $buchungModel->insert([
                     'lid' => (int)$lid,
                     'kid' => $kid,
@@ -193,6 +260,7 @@ class BookingController extends BaseController
                     'bis' => $bis,
                     'status' => 'aktiv',
                     'created_at' => $now,
+                    'kosten' => $kostenPt * $tage,
                 ]);
             }
 
@@ -209,7 +277,15 @@ class BookingController extends BaseController
                     }
                 }
 
+                $bootModel = new \App\Models\BootModel();
+                $bootRows = $bootModel->select('boid, kosten_pt')->whereIn('boid', $selectedBoids)->findAll();
+                $bootKostenById = [];
+                foreach ($bootRows as $row) {
+                    $bootKostenById[(int)$row['boid']] = (int)($row['kosten_pt'] ?? 0);
+                }
+
                 foreach ($selectedBoids as $boid) {
+                    $kostenPt = $bootKostenById[(int)$boid] ?? 0;
                     $bootBuchungModel->insert([
                         'boid' => (int)$boid,
                         'kid' => $kid,
@@ -217,6 +293,7 @@ class BookingController extends BaseController
                         'bis' => $bis,
                         'status' => 'aktiv',
                         'created_at' => $now,
+                        'kosten' => $kostenPt * $tage,
                     ]);
                 }
             }
@@ -233,6 +310,7 @@ class BookingController extends BaseController
             if (empty($selectedIds)) return redirect()->to('/#buchung');
 
             $bootBuchungModel = new \App\Models\BootBuchungModel();
+            $tage = $this->calculateDays($von, $bis);
 
             // Kollisionen prüfen
             $bookedBoids = $bootBuchungModel->findBookedBoidsForRange($von, $bis);
@@ -246,7 +324,15 @@ class BookingController extends BaseController
                 }
             }
 
+            $bootModel = new \App\Models\BootModel();
+            $bootRows = $bootModel->select('boid, kosten_pt')->whereIn('boid', $selectedIds)->findAll();
+            $bootKostenById = [];
+            foreach ($bootRows as $row) {
+                $bootKostenById[(int)$row['boid']] = (int)($row['kosten_pt'] ?? 0);
+            }
+
             foreach ($selectedIds as $boid) {
+                $kostenPt = $bootKostenById[(int)$boid] ?? 0;
                 $bootBuchungModel->insert([
                     'boid' => (int)$boid,
                     'kid' => $kid,
@@ -254,6 +340,7 @@ class BookingController extends BaseController
                     'bis' => $bis,
                     'status' => 'aktiv',
                     'created_at' => $now,
+                    'kosten' => $kostenPt * $tage,
                 ]);
             }
 

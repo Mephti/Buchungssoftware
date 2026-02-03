@@ -33,7 +33,7 @@ class AccountController extends BaseController
         $db = \Config\Database::connect();
 
         $liegeplatzBuchungen = $db->table('liegeplatz_buchungen lb')
-            ->select('lb.bid, lb.von, lb.bis, lb.status, lp.anleger, lp.nummer')
+            ->select('lb.bid, lb.von, lb.bis, lb.status, lb.kosten, lp.anleger, lp.nummer')
             ->join('liegeplaetze lp', 'lp.lid = lb.lid')
             ->where('lb.kid', $kid)
             ->orderBy('lb.von', 'DESC')
@@ -41,7 +41,7 @@ class AccountController extends BaseController
             ->getResultArray();
 
         $bootBuchungen = $db->table('boot_buchungen bb')
-            ->select('bb.bbid, bb.von, bb.bis, bb.status, b.name, b.typ, b.plaetze')
+            ->select('bb.bbid, bb.von, bb.bis, bb.status, bb.kosten, b.name, b.typ, b.plaetze')
             ->join('boote b', 'b.boid = bb.boid')
             ->where('bb.kid', $kid)
             ->orderBy('bb.von', 'DESC')

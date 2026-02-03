@@ -19,6 +19,7 @@
             <th>Nummer</th>
             <th>Von</th>
             <th>Bis</th>
+            <th>Kosten</th>
             <th>Status</th>
             <th>Aktion</th>
         </tr>
@@ -31,6 +32,7 @@
                 <td><?= esc($b['nummer']) ?></td>
                 <td><?= esc($b['von']) ?></td>
                 <td><?= esc($b['bis']) ?></td>
+                <td><?= esc($b['kosten'] ?? 0) ?></td>
                 <td><?= esc($b['status']) ?></td>
                 <td>
                     <?php if (($b['status'] ?? '') !== 'storniert'): ?>
@@ -66,6 +68,7 @@
             <th>Plätze</th>
             <th>Von</th>
             <th>Bis</th>
+            <th>Kosten</th>
             <th>Status</th>
             <th>Aktion</th>
         </tr>
@@ -79,6 +82,7 @@
                 <td><?= esc($b['plaetze']) ?></td>
                 <td><?= esc($b['von']) ?></td>
                 <td><?= esc($b['bis']) ?></td>
+                <td><?= esc($b['kosten'] ?? 0) ?></td>
                 <td><?= esc($b['status']) ?></td>
                 <td>
                     <?php if (($b['status'] ?? '') !== 'storniert'): ?>

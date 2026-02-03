@@ -9,6 +9,31 @@ use App\Models\BootBuchungModel;
 
 class HomeController extends BaseController
 {
+    private function calculateDays(?string $von, ?string $bis): int
+    {
+        $von = trim((string)$von);
+        $bis = trim((string)$bis);
+        if ($von === '' || $bis === '') {
+            return 0;
+        }
+
+        $start = \DateTimeImmutable::createFromFormat('Y-m-d', $von);
+        $end = \DateTimeImmutable::createFromFormat('Y-m-d', $bis);
+        if ($start && $end && $start->format('Y-m-d') === $von && $end->format('Y-m-d') === $bis) {
+            if ($end < $start) {
+                return 0;
+            }
+            return $start->diff($end)->days + 1;
+        }
+
+        $startTs = strtotime($von);
+        $endTs = strtotime($bis);
+        if ($startTs === false || $endTs === false || $endTs < $startTs) {
+            return 0;
+        }
+        return (int)floor(($endTs - $startTs) / 86400) + 1;
+    }
+
     public function index()
     {
         $booking = session('booking') ?? [];
@@ -43,6 +68,26 @@ class HomeController extends BaseController
                 ->orderBy('name', 'ASC')
                 ->findAll();
         }
+
+        $daysCount = $this->calculateDays($von, $bis);
+
+        $kostenLiegeplatzTotal = 0;
+        foreach ($selectedLiegeplaetze as &$lp) {
+            $kostenPt = (int)($lp['kosten_pt'] ?? 0);
+            $lp['kosten_pt'] = $kostenPt;
+            $lp['kosten_total'] = $kostenPt * $daysCount;
+            $kostenLiegeplatzTotal += $lp['kosten_total'];
+        }
+        unset($lp);
+
+        $kostenBootTotal = 0;
+        foreach ($selectedBoote as &$b) {
+            $kostenPt = (int)($b['kosten_pt'] ?? 0);
+            $b['kosten_pt'] = $kostenPt;
+            $b['kosten_total'] = $kostenPt * $daysCount;
+            $kostenBootTotal += $b['kosten_total'];
+        }
+        unset($b);
 
         // === LIEGEPLÄTZE (linke Seite: Map) ===
         $onlyAvailable = (bool)($booking['filter']['only_available'] ?? false);
@@ -101,6 +146,9 @@ class HomeController extends BaseController
             'selectedLiegeplaetze' => $selectedLiegeplaetze,
             'boote' => $boote,
             'selectedBoote' => $selectedBoote,
+            'daysCount' => $daysCount,
+            'kostenLiegeplatzTotal' => $kostenLiegeplatzTotal,
+            'kostenBootTotal' => $kostenBootTotal,
         ]);
     }
 }

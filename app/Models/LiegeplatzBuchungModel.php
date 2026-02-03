@@ -12,7 +12,7 @@ class LiegeplatzBuchungModel extends Model
     protected $returnType = 'array';
 
     protected $allowedFields = [
-        'lid', 'kid', 'von', 'bis', 'status', 'created_at'
+        'lid', 'kid', 'von', 'bis', 'status', 'created_at', 'kosten'
     ];
 
     protected $useTimestamps = false;

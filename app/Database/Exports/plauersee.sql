@@ -32,7 +32,8 @@ CREATE TABLE `boote` (
   `name` varchar(80) NOT NULL,
   `typ` varchar(40) DEFAULT NULL,
   `plaetze` int(11) UNSIGNED NOT NULL DEFAULT 2,
-  `status` enum('verfuegbar','gesperrt','wartung','unterwegs') NOT NULL DEFAULT 'verfuegbar'
+  `status` enum('verfuegbar','gesperrt','wartung','unterwegs') NOT NULL DEFAULT 'verfuegbar',
+  `kosten_pt` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -60,7 +61,8 @@ CREATE TABLE `boot_buchungen` (
   `bis` date NOT NULL,
   `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
   `created_at` datetime DEFAULT NULL,
-  `group_token` varchar(36) DEFAULT NULL
+  `group_token` varchar(36) DEFAULT NULL,
+  `kosten` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -101,49 +103,50 @@ CREATE TABLE `liegeplaetze` (
   `lid` int(11) UNSIGNED NOT NULL,
   `anleger` varchar(50) NOT NULL,
   `nummer` int(11) UNSIGNED NOT NULL,
-  `status` enum('verfuegbar','gesperrt','vermietet','belegt') NOT NULL DEFAULT 'verfuegbar'
+  `status` enum('verfuegbar','gesperrt','vermietet','belegt') NOT NULL DEFAULT 'verfuegbar',
+  `kosten_pt` int(11) UNSIGNED NOT NULL DEFAULT 100
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `liegeplaetze`
 --
 
-INSERT INTO `liegeplaetze` (`lid`, `anleger`, `nummer`, `status`) VALUES
-(1, 'A', 1, 'verfuegbar'),
-(2, 'A', 2, 'verfuegbar'),
-(3, 'A', 3, 'verfuegbar'),
-(4, 'A', 4, 'verfuegbar'),
-(5, 'A', 5, 'verfuegbar'),
-(6, 'A', 6, 'verfuegbar'),
-(7, 'A', 7, 'verfuegbar'),
-(8, 'A', 8, 'verfuegbar'),
-(9, 'A', 9, 'verfuegbar'),
-(10, 'A', 10, 'verfuegbar'),
-(11, 'A', 11, 'verfuegbar'),
-(12, 'A', 12, 'verfuegbar'),
-(13, 'A', 13, 'verfuegbar'),
-(14, 'A', 14, 'verfuegbar'),
-(15, 'A', 15, 'verfuegbar'),
-(16, 'A', 16, 'verfuegbar'),
-(17, 'A', 17, 'verfuegbar'),
-(18, 'B', 1, 'verfuegbar'),
-(19, 'B', 2, 'verfuegbar'),
-(20, 'B', 3, 'verfuegbar'),
-(21, 'B', 4, 'verfuegbar'),
-(22, 'B', 5, 'verfuegbar'),
-(23, 'B', 6, 'verfuegbar'),
-(24, 'B', 7, 'verfuegbar'),
-(25, 'B', 8, 'verfuegbar'),
-(26, 'B', 9, 'verfuegbar'),
-(27, 'B', 10, 'verfuegbar'),
-(28, 'B', 11, 'verfuegbar'),
-(29, 'B', 12, 'verfuegbar'),
-(30, 'B', 13, 'verfuegbar'),
-(31, 'B', 14, 'verfuegbar'),
-(32, 'B', 15, 'verfuegbar'),
-(33, 'B', 16, 'verfuegbar'),
-(34, 'B', 17, 'verfuegbar'),
-(35, 'B', 18, 'verfuegbar');
+INSERT INTO `liegeplaetze` (`lid`, `anleger`, `nummer`, `status`, `kosten_pt`) VALUES
+(1, 'A', 1, 'verfuegbar', 100),
+(2, 'A', 2, 'verfuegbar', 100),
+(3, 'A', 3, 'verfuegbar', 100),
+(4, 'A', 4, 'verfuegbar', 100),
+(5, 'A', 5, 'verfuegbar', 100),
+(6, 'A', 6, 'verfuegbar', 100),
+(7, 'A', 7, 'verfuegbar', 100),
+(8, 'A', 8, 'verfuegbar', 100),
+(9, 'A', 9, 'verfuegbar', 100),
+(10, 'A', 10, 'verfuegbar', 100),
+(11, 'A', 11, 'verfuegbar', 100),
+(12, 'A', 12, 'verfuegbar', 100),
+(13, 'A', 13, 'verfuegbar', 100),
+(14, 'A', 14, 'verfuegbar', 100),
+(15, 'A', 15, 'verfuegbar', 100),
+(16, 'A', 16, 'verfuegbar', 100),
+(17, 'A', 17, 'verfuegbar', 100),
+(18, 'B', 1, 'verfuegbar', 100),
+(19, 'B', 2, 'verfuegbar', 100),
+(20, 'B', 3, 'verfuegbar', 100),
+(21, 'B', 4, 'verfuegbar', 100),
+(22, 'B', 5, 'verfuegbar', 100),
+(23, 'B', 6, 'verfuegbar', 100),
+(24, 'B', 7, 'verfuegbar', 100),
+(25, 'B', 8, 'verfuegbar', 100),
+(26, 'B', 9, 'verfuegbar', 100),
+(27, 'B', 10, 'verfuegbar', 100),
+(28, 'B', 11, 'verfuegbar', 100),
+(29, 'B', 12, 'verfuegbar', 100),
+(30, 'B', 13, 'verfuegbar', 100),
+(31, 'B', 14, 'verfuegbar', 100),
+(32, 'B', 15, 'verfuegbar', 100),
+(33, 'B', 16, 'verfuegbar', 100),
+(34, 'B', 17, 'verfuegbar', 100),
+(35, 'B', 18, 'verfuegbar', 100);
 
 -- --------------------------------------------------------
 
@@ -159,7 +162,8 @@ CREATE TABLE `liegeplatz_buchungen` (
   `bis` date NOT NULL,
   `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
   `created_at` datetime DEFAULT NULL,
-  `group_token` varchar(36) DEFAULT NULL
+  `group_token` varchar(36) DEFAULT NULL,
+  `kosten` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

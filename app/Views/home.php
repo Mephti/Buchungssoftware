@@ -116,11 +116,21 @@
                     <strong>Typ:</strong> <?= esc($booking['typ'] ?? 'liegeplatz') ?>
                 </p>
 
+                <?php
+                $hasDateRange = !empty($booking['von']) && !empty($booking['bis']);
+                ?>
+
                 <?php if (!empty($selectedLiegeplaetze)): ?>
                     <p><strong>Ausgewählte Liegeplätze:</strong></p>
                     <ul>
                         <?php foreach ($selectedLiegeplaetze as $lp): ?>
-                            <li>Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?></li>
+                            <li>
+                                Anleger <?= esc($lp['anleger']) ?> – Platz <?= esc($lp['nummer']) ?>
+                                · Kosten/Tag: <?= esc($lp['kosten_pt'] ?? 0) ?>
+                                <?php if ($hasDateRange): ?>
+                                    · Gesamt: <?= esc($lp['kosten_total'] ?? 0) ?>
+                                <?php endif; ?>
+                            </li>
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
@@ -129,9 +139,27 @@
                     <p><strong>Ausgewählte Boote:</strong></p>
                     <ul>
                         <?php foreach ($selectedBoote as $b): ?>
-                            <li><?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?></li>
+                            <li>
+                                <?= esc($b['name']) ?><?= !empty($b['typ']) ? ' (' . esc($b['typ']) . ')' : '' ?>
+                                · Kosten/Tag: <?= esc($b['kosten_pt'] ?? 0) ?>
+                                <?php if ($hasDateRange): ?>
+                                    · Gesamt: <?= esc($b['kosten_total'] ?? 0) ?>
+                                <?php endif; ?>
+                            </li>
                         <?php endforeach; ?>
                     </ul>
+                <?php endif; ?>
+
+                <?php if ($hasDateRange): ?>
+                    <p><strong>Kosten:</strong></p>
+                    <p>
+                        Liegeplatz gesamt (<?= esc($daysCount) ?> <?= $daysCount === 1 ? 'Tag' : 'Tage' ?>):
+                        <?= esc($kostenLiegeplatzTotal ?? 0) ?>
+                    </p>
+                    <p>
+                        Boot gesamt (<?= esc($daysCount) ?> <?= $daysCount === 1 ? 'Tag' : 'Tage' ?>):
+                        <?= esc($kostenBootTotal ?? 0) ?>
+                    </p>
                 <?php endif; ?>
 
                 <?php

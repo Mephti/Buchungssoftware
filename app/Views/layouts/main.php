@@ -102,7 +102,7 @@ if ($apiKey !== '') {
             <?php if (session('isLoggedIn')): ?>
                 <span style="margin-right:12px;"><?= esc(session('name')) ?></span>
                 <a href="<?= site_url('/mein-konto') ?>">Mein Konto</a> |
-                <a href="<?= site_url('/meine-buchungen') ?>">Meine Buchungen</a> |
+                <a href="<?= site_url(session('role') === 'mitarbeiter' ? '/mitarbeiter' : '/meine-buchungen') ?>">Meine Buchungen</a> |
                 <a href="<?= site_url('/logout') ?>">Logout</a>
             <?php else: ?>
                 <a href="<?= site_url('/login') ?>">Login</a> |

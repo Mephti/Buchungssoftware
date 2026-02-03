@@ -20,6 +20,8 @@ $routes->get('mein-konto', 'AccountController::index');
 $routes->get('meine-buchungen', 'AccountController::bookings');
 $routes->post('meine-buchungen/storno', 'AccountController::cancelBooking');
 
+$routes->get('mitarbeiter', 'MitarbeiterController::index');
+
 $routes->post('buchung/auswahl', 'BookingController::select');
 $routes->get('buchung/weiter', 'BookingController::next');
 $routes->post('buchung/reset', 'BookingController::reset');

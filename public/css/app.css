@@ -66,6 +66,48 @@ header, .header{
     gap: 12px;
     min-height: 74px;
 }
+
+.header__weather{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.weather{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    box-shadow: var(--shadow);
+}
+
+.weather__icon{
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+
+.weather__temp{
+    font-weight: 900;
+    line-height: 1;
+}
+
+.weather__wind{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.weather--empty{
+    color: var(--muted);
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px dashed var(--border);
+    background: #fff;
+}
 .brand img{
     height: 40px;
     width: auto;
@@ -515,6 +557,8 @@ select:focus{
     .sidebar{ position: static; }
     .dd-grid{ grid-template-columns: 1fr; }
     .dd-boats{ border-left: 0; border-top: 1px solid var(--border); }
+    .header__inner{ flex-wrap: wrap; }
+    .header__weather{ order: 3; width: 100%; justify-content: flex-start; }
 }
 
 @media (max-width: 640px){

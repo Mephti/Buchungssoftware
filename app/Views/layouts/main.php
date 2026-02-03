@@ -31,22 +31,85 @@
 </head>
 <body>
 
-<header style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #ddd;">
-    <a class="brand" href="<?= site_url('/') ?>" aria-label="Startseite">
-        <img src="<?= base_url('img/logo.png') ?>" alt="Plauer See">
-    </a>
+<?php
+$weather = null;
+$weatherError = null;
+$apiKey = trim((string)getenv('OPENWEATHER_API_KEY'));
+if ($apiKey !== '') {
+    $cache = \Config\Services::cache();
+    $cacheKey = 'weather_plau_am_see';
+    $weather = $cache->get($cacheKey);
+    if (!$weather) {
+        $url = 'https://api.openweathermap.org/data/2.5/weather?q='
+            . rawurlencode('Plau am See,de')
+            . '&units=metric&lang=de&appid=' . rawurlencode($apiKey);
+        $context = stream_context_create([
+            'http' => ['timeout' => 2],
+            'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+        ]);
+        $json = @file_get_contents($url, false, $context);
+        if ($json !== false) {
+            $data = json_decode($json, true);
+            if (
+                is_array($data)
+                && array_key_exists('temp', $data['main'] ?? [])
+                && isset($data['weather'][0]['icon'])
+            ) {
+                $weather = [
+                    'temp' => (float)$data['main']['temp'],
+                    'wind' => isset($data['wind']['speed']) ? (float)$data['wind']['speed'] : null,
+                    'icon' => (string)$data['weather'][0]['icon'],
+                    'desc' => (string)($data['weather'][0]['description'] ?? ''),
+                ];
+                $cache->save($cacheKey, $weather, 600);
+            } else {
+                $weatherError = 'Keine Wetterdaten.';
+            }
+        } else {
+            $weatherError = 'Wetter nicht verfuegbar.';
+        }
+    }
+}
+?>
 
-    <nav>
-        <?php if (session('isLoggedIn')): ?>
-            <span style="margin-right:12px;"><?= esc(session('name')) ?></span>
-            <a href="<?= site_url('/mein-konto') ?>">Mein Konto</a> |
-            <a href="<?= site_url('/meine-buchungen') ?>">Meine Buchungen</a> |
-            <a href="<?= site_url('/logout') ?>">Logout</a>
-        <?php else: ?>
-            <a href="<?= site_url('/login') ?>">Login</a> |
-            <a href="<?= site_url('/register') ?>">Registrierung</a>
-        <?php endif; ?>
-    </nav>
+<header class="header">
+    <div class="header__inner container">
+        <a class="brand" href="<?= site_url('/') ?>" aria-label="Startseite">
+            <img src="<?= base_url('img/logo.png') ?>" alt="Plauer See">
+        </a>
+
+        <div class="header__weather" aria-live="polite">
+            <?php if ($weather): ?>
+                <div class="weather">
+                    <img
+                        class="weather__icon"
+                        src="<?= esc('https://openweathermap.org/img/wn/' . $weather['icon'] . '@2x.png') ?>"
+                        alt="<?= esc($weather['desc']) ?>"
+                    >
+                    <div class="weather__meta">
+                        <div class="weather__temp"><?= esc(round($weather['temp'])) ?>°C</div>
+                        <?php if ($weather['wind'] !== null): ?>
+                            <div class="weather__wind">Wind: <?= esc($weather['wind']) ?> m/s</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php elseif ($apiKey !== ''): ?>
+                <div class="weather weather--empty"><?= esc($weatherError ?? 'Wetter nicht verfuegbar.') ?></div>
+            <?php endif; ?>
+        </div>
+
+        <nav>
+            <?php if (session('isLoggedIn')): ?>
+                <span style="margin-right:12px;"><?= esc(session('name')) ?></span>
+                <a href="<?= site_url('/mein-konto') ?>">Mein Konto</a> |
+                <a href="<?= site_url('/meine-buchungen') ?>">Meine Buchungen</a> |
+                <a href="<?= site_url('/logout') ?>">Logout</a>
+            <?php else: ?>
+                <a href="<?= site_url('/login') ?>">Login</a> |
+                <a href="<?= site_url('/register') ?>">Registrierung</a>
+            <?php endif; ?>
+        </nav>
+    </div>
 </header>
 
 <main class="container" style="padding:16px 0;">

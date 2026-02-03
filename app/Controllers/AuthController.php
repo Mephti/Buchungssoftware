@@ -60,7 +60,7 @@ class AuthController extends BaseController
                 'isLoggedIn' => true,
             ]);
 
-            return redirect()->to('/');
+            return redirect()->to('/mitarbeiter');
         }
 
         return redirect()->to('/login')->with('error', 'E-Mail oder Passwort ist falsch.');

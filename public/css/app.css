@@ -38,6 +38,22 @@ p{ line-height: 1.55; }
     padding: 0 24px;
 }
 
+.auth-panel{
+    max-width: 520px;
+    margin: 32px auto 0;
+    padding: 24px;
+}
+
+.auth-panel form{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auth-panel h1{
+    margin-top: 0;
+}
+
 /* ===== Header (passt zu deinem main.php, auch wenn Klassen abweichen) ===== */
 header, .header{
     background: var(--surface);
@@ -499,4 +515,20 @@ select:focus{
     .sidebar{ position: static; }
     .dd-grid{ grid-template-columns: 1fr; }
     .dd-boats{ border-left: 0; border-top: 1px solid var(--border); }
+}
+
+@media (max-width: 640px){
+    .auth-panel{
+        margin-top: 20px;
+        padding: 18px;
+    }
+
+    .auth-panel h1{
+        font-size: 22px;
+    }
+
+    .auth-panel button,
+    .auth-panel .btn{
+        width: 100%;
+    }
 }

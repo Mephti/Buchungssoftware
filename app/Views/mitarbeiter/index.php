@@ -52,6 +52,13 @@
     <button type="submit" style="margin-left:8px;">Filtern</button>
 </form>
 
+<form method="post" action="<?= site_url('mitarbeiter/buchungen/cleanup') ?>" style="margin-bottom:12px;">
+    <?= csrf_field() ?>
+    <button type="submit" onclick="return confirm('Stornierte Buchungen (älter als 14 Tage) wirklich löschen?')">
+        Stornierte Buchungen bereinigen
+    </button>
+</form>
+
 <?php if (!empty($success)): ?>
     <p style="color:green;"><?= esc($success) ?></p>
 <?php endif; ?>

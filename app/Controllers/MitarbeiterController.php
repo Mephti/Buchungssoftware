@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\MitarbeiterBereichModel;
+
 class MitarbeiterController extends BaseController
 {
     private function parseDate(?string $value): ?\DateTimeImmutable
@@ -54,42 +56,11 @@ class MitarbeiterController extends BaseController
         }
 
         $onlyActive = $this->request->getGet('only_active') === '1';
-        $db = \Config\Database::connect();
-
-        $lpQuery = $db->table('liegeplatz_buchungen lb')
-            ->select('lb.bid, lb.von, lb.bis, lb.status, lb.kosten, lp.anleger, lp.nummer, k.kid, k.vorname, k.nachname, k.email')
-            ->join('liegeplaetze lp', 'lp.lid = lb.lid')
-            ->join('kunden k', 'k.kid = lb.kid')
-            ->orderBy('lb.von', 'DESC');
-
-        if ($onlyActive) {
-            $lpQuery->where('lb.status', 'aktiv');
-        }
-        $liegeplatzBuchungen = $lpQuery->get()->getResultArray();
-
-        $bootQuery = $db->table('boot_buchungen bb')
-            ->select('bb.bbid, bb.von, bb.bis, bb.status, bb.kosten, b.name, b.typ, b.plaetze, k.kid, k.vorname, k.nachname, k.email')
-            ->join('boote b', 'b.boid = bb.boid')
-            ->join('kunden k', 'k.kid = bb.kid')
-            ->orderBy('bb.von', 'DESC');
-
-        if ($onlyActive) {
-            $bootQuery->where('bb.status', 'aktiv');
-        }
-        $bootBuchungen = $bootQuery->get()->getResultArray();
-
-        $liegeplaetze = $db->table('liegeplaetze')
-            ->select('lid, anleger, nummer, status')
-            ->orderBy('anleger', 'ASC')
-            ->orderBy('nummer', 'ASC')
-            ->get()
-            ->getResultArray();
-
-        $boote = $db->table('boote')
-            ->select('boid, name, typ, plaetze, status')
-            ->orderBy('name', 'ASC')
-            ->get()
-            ->getResultArray();
+        $mitModel = new MitarbeiterBereichModel();
+        $liegeplatzBuchungen = $mitModel->getLiegeplatzBuchungen($onlyActive);
+        $bootBuchungen = $mitModel->getBootBuchungen($onlyActive);
+        $liegeplaetze = $mitModel->getLiegeplaetze();
+        $boote = $mitModel->getBoote();
 
         return view('mitarbeiter/index', [
             'liegeplatzBuchungen' => $liegeplatzBuchungen,
@@ -114,13 +85,8 @@ class MitarbeiterController extends BaseController
         $bis = (string)($this->request->getGet('bis') ?? '');
         $typ = (string)($this->request->getGet('typ') ?? 'liegeplatz');
 
-        $db = \Config\Database::connect();
-        $kunden = $db->table('kunden')
-            ->select('kid, vorname, nachname, email')
-            ->orderBy('nachname', 'ASC')
-            ->orderBy('vorname', 'ASC')
-            ->get()
-            ->getResultArray();
+        $mitModel = new MitarbeiterBereichModel();
+        $kunden = $mitModel->getKundenList();
 
         $liegeplaetze = [];
         $boote = [];
@@ -198,7 +164,7 @@ class MitarbeiterController extends BaseController
         }
 
         $newCustomer = $this->request->getPost('new_customer') === '1';
-        $db = \Config\Database::connect();
+        $mitModel = new MitarbeiterBereichModel();
         $kid = 0;
 
         if ($newCustomer) {
@@ -241,21 +207,18 @@ class MitarbeiterController extends BaseController
                 return redirect()->to('/mitarbeiter/buchung')->with('error', 'Passwort muss mindestens 8 Zeichen haben.')->with('old', $data);
             }
 
-            $exists = $db->table('kunden')->where('email', $data['email'])->get()->getRowArray();
-            if ($exists) {
+            if ($mitModel->getKundeByEmail($data['email'])) {
                 return redirect()->to('/mitarbeiter/buchung')->with('error', 'Diese E-Mail ist bereits registriert.')->with('old', $data);
             }
 
             $data['passwort'] = password_hash($pass1, PASSWORD_DEFAULT);
-            $db->table('kunden')->insert($data);
-            $kid = (int)$db->insertID();
+            $kid = $mitModel->createKunde($data);
         } else {
             $kid = (int)$this->request->getPost('kid');
             if ($kid <= 0) {
                 return redirect()->to('/mitarbeiter/buchung')->with('error', 'Bitte einen Kunden auswählen.');
             }
-            $exists = $db->table('kunden')->where('kid', $kid)->get()->getRowArray();
-            if (!$exists) {
+            if (!$mitModel->getKundeById($kid)) {
                 return redirect()->to('/mitarbeiter/buchung')->with('error', 'Kunde nicht gefunden.');
             }
         }
@@ -272,8 +235,7 @@ class MitarbeiterController extends BaseController
             $bookedLids = $buchungModel->findBookedLidsForRange($von, $bis);
             $bookedSet = array_flip(array_map('intval', $bookedLids));
 
-            $lpModel = new \App\Models\LiegeplatzModel();
-            $lpRows = $lpModel->select('lid, status, kosten_pt')->whereIn('lid', $selectedIds)->findAll();
+            $lpRows = $mitModel->getLiegeplaetzeByIds($selectedIds);
             $lpById = [];
             foreach ($lpRows as $row) {
                 $lpById[(int)$row['lid']] = $row;
@@ -316,8 +278,7 @@ class MitarbeiterController extends BaseController
             $bookedBoids = $bootBuchungModel->findBookedBoidsForRange($von, $bis);
             $bookedSet = array_flip(array_map('intval', $bookedBoids));
 
-            $bootModel = new \App\Models\BootModel();
-            $bootRows = $bootModel->select('boid, status, kosten_pt')->whereIn('boid', $selectedIds)->findAll();
+            $bootRows = $mitModel->getBooteByIds($selectedIds);
             $bootById = [];
             foreach ($bootRows as $row) {
                 $bootById[(int)$row['boid']] = $row;
@@ -368,47 +329,14 @@ class MitarbeiterController extends BaseController
             return redirect()->to('/mitarbeiter')->with('error', 'Ungültige Anfrage.');
         }
 
-        $db = \Config\Database::connect();
+        $mitModel = new MitarbeiterBereichModel();
+        $result = $mitModel->cancelBooking($type, $id);
 
-        if ($type === 'liegeplatz') {
-            $row = $db->table('liegeplatz_buchungen')
-                ->where('bid', $id)
-                ->get()
-                ->getRowArray();
-
-            if (!$row) {
-                return redirect()->to('/mitarbeiter')->with('error', 'Buchung nicht gefunden.');
-            }
-
-            if (($row['status'] ?? '') === 'storniert') {
-                return redirect()->to('/mitarbeiter')->with('success', 'Buchung war bereits storniert.');
-            }
-
-            $db->table('liegeplatz_buchungen')
-                ->where('bid', $id)
-                ->update(['status' => 'storniert']);
-
-            return redirect()->to('/mitarbeiter')->with('success', 'Liegeplatz-Buchung storniert.');
+        if (!$result['ok']) {
+            return redirect()->to('/mitarbeiter')->with('error', $result['message']);
         }
 
-        $row = $db->table('boot_buchungen')
-            ->where('bbid', $id)
-            ->get()
-            ->getRowArray();
-
-        if (!$row) {
-            return redirect()->to('/mitarbeiter')->with('error', 'Buchung nicht gefunden.');
-        }
-
-        if (($row['status'] ?? '') === 'storniert') {
-            return redirect()->to('/mitarbeiter')->with('success', 'Buchung war bereits storniert.');
-        }
-
-        $db->table('boot_buchungen')
-            ->where('bbid', $id)
-            ->update(['status' => 'storniert']);
-
-        return redirect()->to('/mitarbeiter')->with('success', 'Boot-Buchung storniert.');
+        return redirect()->to('/mitarbeiter')->with('success', $result['message']);
     }
 
     public function updateStatus()
@@ -432,20 +360,14 @@ class MitarbeiterController extends BaseController
             return redirect()->to('/mitarbeiter')->with('error', 'Ungültige Status-Änderung.');
         }
 
-        $db = \Config\Database::connect();
+        $mitModel = new MitarbeiterBereichModel();
+        $result = $mitModel->updateStatus($type, $id, $status);
 
-        if ($type === 'liegeplatz') {
-            $db->table('liegeplaetze')
-                ->where('lid', $id)
-                ->update(['status' => $status]);
-            return redirect()->to('/mitarbeiter')->with('success', 'Liegeplatz-Status aktualisiert.');
+        if (!$result['ok']) {
+            return redirect()->to('/mitarbeiter')->with('error', $result['message']);
         }
 
-        $db->table('boote')
-            ->where('boid', $id)
-            ->update(['status' => $status]);
-
-        return redirect()->to('/mitarbeiter')->with('success', 'Boot-Status aktualisiert.');
+        return redirect()->to('/mitarbeiter')->with('success', $result['message']);
     }
 
     public function createBoat()
@@ -476,8 +398,8 @@ class MitarbeiterController extends BaseController
             }
         }
 
-        $db = \Config\Database::connect();
-        $db->table('boote')->insert([
+        $mitModel = new MitarbeiterBereichModel();
+        $mitModel->createBoat([
             'name' => $name,
             'typ' => $typ !== '' ? $typ : null,
             'plaetze' => $plaetze,
@@ -486,5 +408,20 @@ class MitarbeiterController extends BaseController
         ]);
 
         return redirect()->to('/mitarbeiter')->with('success', 'Boot angelegt.');
+    }
+
+    public function purgeOldCancelledBookings()
+    {
+        if ($redir = $this->requireLogin()) return $redir;
+
+        if (session('role') !== 'mitarbeiter') {
+            return redirect()->to('/');
+        }
+
+        $mitModel = new MitarbeiterBereichModel();
+        $counts = $mitModel->deleteOldCancelledBookings(14);
+
+        $msg = 'Gelöscht: ' . $counts['liegeplatz'] . ' Liegeplatz, ' . $counts['boot'] . ' Boot.';
+        return redirect()->to('/mitarbeiter')->with('success', $msg);
     }
 }

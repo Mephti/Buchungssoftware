@@ -117,7 +117,15 @@ if ($apiKey !== '') {
 </main>
 
 <footer style="padding:12px 16px; border-top:1px solid #ddd; margin-top:24px; font-size:0.9em;">
-    &copy; <?= date('Y') ?> Buchungssoftware
+    <div style="display:flex; flex-direction:column; gap:6px; align-items:center; text-align:center;">
+        <img src="<?= base_url('img/logo.png') ?>" alt="Plauer See" style="height:46px; width:auto;">
+        <div>&copy; <?= date('Y') ?> Buchungssoftware</div>
+        <div>Steiner, Seipold</div>
+        <div>Hafendorf Plau am See</div>
+        <div>Kalkofen 21, 19395 Plau am See</div>
+        <div>Tel.: 0000 / 000000</div>
+        <div><a href="https://plau-hafendorf.de/" target="_blank" rel="noopener">https://plau-hafendorf.de/</a></div>
+    </div>
 </footer>
 
 <!-- ✅ Seite-spezifische Scripts -->

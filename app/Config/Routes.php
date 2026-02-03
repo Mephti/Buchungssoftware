@@ -26,6 +26,7 @@ $routes->post('mitarbeiter/buchung', 'MitarbeiterController::createBooking');
 $routes->post('mitarbeiter/buchungen/storno', 'MitarbeiterController::cancelBooking');
 $routes->post('mitarbeiter/status', 'MitarbeiterController::updateStatus');
 $routes->post('mitarbeiter/boote/anlegen', 'MitarbeiterController::createBoat');
+$routes->post('mitarbeiter/buchungen/cleanup', 'MitarbeiterController::purgeOldCancelledBookings');
 
 $routes->post('buchung/auswahl', 'BookingController::select');
 $routes->get('buchung/weiter', 'BookingController::next');

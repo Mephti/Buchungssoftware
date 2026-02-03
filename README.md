@@ -50,3 +50,12 @@ Die folgenden Einträge sollten einkommentiert werden:
  ### Datenbank laden
  In phpMyAdmin eine Datenbank namens "plauersee" erstellen.
  Datenbank auswählen und im Reiter "Importieren" aus dem Projektordner app/Database/Exports/plauersee.sql laden.
+
+ ### Zugangsdaten
+ Kundenuser: test@test.de
+ 
+ Passwort: Test1234
+
+ Mitarbeiteruser: admin@admin
+ 
+ Passwort: admin

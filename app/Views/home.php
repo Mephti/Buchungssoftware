@@ -78,6 +78,13 @@
                     </div>
 
                     <p class="dd-hint">Boot rechts greifen und auf einen freien Liegeplatz ziehen.</p>
+                    <div class="dd-legend">
+                        <span class="dd-legend__item is-available">frei</span>
+                        <span class="dd-legend__item is-selected">ausgewählt</span>
+                        <span class="dd-legend__item is-booked">vermietet</span>
+                        <span class="dd-legend__item is-blocked">gesperrt</span>
+                        <span class="dd-legend__item is-occupied">belegt</span>
+                    </div>
                 </div>
 
                 <!-- Rechts: Boote -->
@@ -210,6 +217,7 @@ foreach (($liegeplaetze ?? []) as $lp) {
             'available' => !empty($lp['is_available_in_range']),
             'bookedInRange' => !empty($lp['is_booked_in_range']),
             'selected' => in_array((int)($lp['lid'] ?? 0), $selectedLids, true),
+            'status' => (string)($lp['status'] ?? ''),
     ];
 }
 

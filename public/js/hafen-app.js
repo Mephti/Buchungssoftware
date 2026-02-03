@@ -39,10 +39,18 @@
             slotClass(slot) {
                 const key = this.slotKey(slot);
                 const meta = this.slotMeta[key];
+                const status = (meta && meta.status) ? String(meta.status) : 'verfuegbar';
+                const booked = !!(meta && meta.bookedInRange);
+                const blocked = status === 'gesperrt' || status === 'belegt';
+                const vermietet = status === 'vermietet';
+                const showBooked = (booked || vermietet) && !blocked;
                 return {
                     'dock-slot': true,
-                    'is-unavailable': meta && !meta.available,
-                    'is-selected': meta && meta.selected,
+                    'is-blocked': status === 'gesperrt',
+                    'is-occupied': status === 'belegt',
+                    'is-booked': showBooked,
+                    'is-selected': meta && meta.selected && meta.available && !showBooked,
+                    'is-available': meta && meta.available && !showBooked && !(meta && meta.selected),
                 };
             },
 

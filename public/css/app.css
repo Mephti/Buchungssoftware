@@ -349,7 +349,7 @@ select:focus{
     position:absolute;
     border: 2px dashed rgba(11,74,122,.55);
     border-radius: 12px;
-    background: rgba(11,74,122,.08);
+    background: rgba(46,125,50,.10);
     cursor: pointer;
 }
 
@@ -372,21 +372,92 @@ select:focus{
     opacity: 1;
 }
 
-.dock-slot.is-unavailable{
-    border-color: rgba(198,40,40,.65);
-    background: rgba(198,40,40,.08);
+.dock-slot.is-available{
+    border-style: solid;
+    border-color: rgba(46,125,50,.70);
+    background: rgba(46,125,50,.10);
+}
+
+.dock-slot.is-blocked{
+    border-style: solid;
+    border-color: rgba(198,40,40,.70);
+    background: rgba(198,40,40,.10);
+    cursor: not-allowed;
+}
+
+.dock-slot.is-booked{
+    border-style: solid;
+    border-color: rgba(239,108,0,.70);
+    background: rgba(239,108,0,.12);
+    cursor: not-allowed;
+}
+
+.dock-slot.is-occupied{
+    border-style: solid;
+    border-color: rgba(21,101,192,.70);
+    background: rgba(21,101,192,.12);
+    cursor: not-allowed;
 }
 
 .dock-slot.is-selected{
     border-style: solid;
-    background: rgba(46,125,50,.10);
-    border-color: rgba(46,125,50,.70);
+    border-color: rgba(106,27,154,.70);
+    background: rgba(106,27,154,.12);
 }
 
 .dd-hint{
     margin-top: 10px;
     color: var(--muted);
     font-size: 14px;
+}
+
+.dd-legend{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.dd-legend__item{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid rgba(15,23,42,.18);
+    background: #fff;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+}
+
+.dd-legend__item::before{
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+.dd-legend__item.is-available::before{
+    background: rgba(46,125,50,.85);
+}
+
+.dd-legend__item.is-selected::before{
+    background: rgba(106,27,154,.85);
+}
+
+.dd-legend__item.is-booked::before{
+    background: rgba(239,108,0,.85);
+}
+
+.dd-legend__item.is-blocked::before{
+    background: rgba(198,40,40,.85);
+}
+
+.dd-legend__item.is-occupied::before{
+    background: rgba(21,101,192,.85);
 }
 
 .dd-boats{

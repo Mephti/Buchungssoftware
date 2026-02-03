@@ -4,29 +4,37 @@ namespace App\Controllers;
 
 class BookingController extends BaseController
 {
+    private function parseDate(?string $value): ?\DateTimeImmutable
+    {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return null;
+        }
+
+        $formats = ['Y-m-d', 'd.m.Y', 'd/m/Y', 'Y/m/d'];
+        foreach ($formats as $format) {
+            $dt = \DateTimeImmutable::createFromFormat($format, $value);
+            if ($dt && $dt->format($format) === $value) {
+                return $dt;
+            }
+        }
+
+        try {
+            return new \DateTimeImmutable($value);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     private function calculateDays(string $von, string $bis): int
     {
-        $von = trim($von);
-        $bis = trim($bis);
-        if ($von === '' || $bis === '') {
+        $start = $this->parseDate($von);
+        $end = $this->parseDate($bis);
+        if (!$start || !$end || $end < $start) {
             return 0;
         }
 
-        $start = \DateTimeImmutable::createFromFormat('Y-m-d', $von);
-        $end = \DateTimeImmutable::createFromFormat('Y-m-d', $bis);
-        if ($start && $end && $start->format('Y-m-d') === $von && $end->format('Y-m-d') === $bis) {
-            if ($end < $start) {
-                return 0;
-            }
-            return $start->diff($end)->days + 1;
-        }
-
-        $startTs = strtotime($von);
-        $endTs = strtotime($bis);
-        if ($startTs === false || $endTs === false || $endTs < $startTs) {
-            return 0;
-        }
-        return (int)floor(($endTs - $startTs) / 86400) + 1;
+        return $start->diff($end)->days + 1;
     }
 
     public function select()

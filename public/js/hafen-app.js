@@ -55,6 +55,10 @@
             },
 
             onDragStart(boat, ev) {
+                if (!boat || boat.status !== 'verfuegbar') {
+                    ev.preventDefault();
+                    return;
+                }
                 this.draggingBoat = boat;
                 ev.dataTransfer.effectAllowed = 'move';
                 ev.dataTransfer.setData('text/plain', String(boat.boid ?? boat.id ?? boat.name ?? ''));

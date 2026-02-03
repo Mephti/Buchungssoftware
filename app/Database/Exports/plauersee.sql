@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 02. Feb 2026 um 21:50
+-- Erstellungszeit: 03. Feb 2026 um 23:28
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -28,24 +28,24 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `boote` (
-  `boid` int(11) UNSIGNED NOT NULL,
-  `name` varchar(80) NOT NULL,
-  `typ` varchar(40) DEFAULT NULL,
-  `plaetze` int(11) UNSIGNED NOT NULL DEFAULT 2,
-  `status` enum('verfuegbar','gesperrt','wartung','unterwegs') NOT NULL DEFAULT 'verfuegbar',
-  `kosten_pt` int(11) UNSIGNED DEFAULT NULL
+                         `boid` int(11) UNSIGNED NOT NULL,
+                         `name` varchar(80) NOT NULL,
+                         `typ` varchar(40) DEFAULT NULL,
+                         `plaetze` int(11) UNSIGNED NOT NULL DEFAULT 2,
+                         `status` enum('verfuegbar','gesperrt','wartung','unterwegs') NOT NULL DEFAULT 'verfuegbar',
+                         `kosten_pt` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `boote`
 --
 
-INSERT INTO `boote` (`boid`, `name`, `typ`, `plaetze`, `status`) VALUES
-(1, 'Seerose 1', 'Ruderboot', 2, 'verfuegbar'),
-(2, 'Seerose 2', 'Tretboot', 4, 'verfuegbar'),
-(3, 'Hecht', 'Motorboot', 5, 'gesperrt'),
-(4, 'Barsch', 'Ruderboot', 2, 'wartung'),
-(5, 'Karpfen', 'Tretboot', 4, 'verfuegbar');
+INSERT INTO `boote` (`boid`, `name`, `typ`, `plaetze`, `status`, `kosten_pt`) VALUES
+                                                                                  (1, 'Seerose 1', 'Ruderboot', 2, 'verfuegbar', 20),
+                                                                                  (2, 'Seerose 2', 'Tretboot', 4, 'verfuegbar', 20),
+                                                                                  (3, 'Hecht', 'Motorboot', 5, 'gesperrt', 80),
+                                                                                  (4, 'Barsch', 'Ruderboot', 2, 'wartung', 20),
+                                                                                  (5, 'Karpfen', 'Tretboot', 4, 'verfuegbar', 20);
 
 -- --------------------------------------------------------
 
@@ -54,16 +54,23 @@ INSERT INTO `boote` (`boid`, `name`, `typ`, `plaetze`, `status`) VALUES
 --
 
 CREATE TABLE `boot_buchungen` (
-  `bbid` int(11) UNSIGNED NOT NULL,
-  `boid` int(11) UNSIGNED NOT NULL,
-  `kid` int(11) UNSIGNED NOT NULL,
-  `von` date NOT NULL,
-  `bis` date NOT NULL,
-  `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
-  `created_at` datetime DEFAULT NULL,
-  `group_token` varchar(36) DEFAULT NULL,
-  `kosten` int(11) UNSIGNED DEFAULT NULL
+                                  `bbid` int(11) UNSIGNED NOT NULL,
+                                  `boid` int(11) UNSIGNED NOT NULL,
+                                  `kid` int(11) UNSIGNED NOT NULL,
+                                  `von` date NOT NULL,
+                                  `bis` date NOT NULL,
+                                  `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
+                                  `created_at` datetime DEFAULT NULL,
+                                  `group_token` varchar(36) DEFAULT NULL,
+                                  `kosten` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Daten für Tabelle `boot_buchungen`
+--
+
+INSERT INTO `boot_buchungen` (`bbid`, `boid`, `kid`, `von`, `bis`, `status`, `created_at`, `group_token`, `kosten`) VALUES
+    (4, 5, 12, '1010-01-01', '1010-01-10', 'aktiv', '2026-02-03 22:19:36', NULL, 200);
 
 -- --------------------------------------------------------
 
@@ -72,18 +79,18 @@ CREATE TABLE `boot_buchungen` (
 --
 
 CREATE TABLE `kunden` (
-  `kid` int(10) UNSIGNED NOT NULL,
-  `nachname` varchar(100) NOT NULL,
-  `vorname` varchar(100) NOT NULL,
-  `geburtsdatum` date NOT NULL,
-  `geschlecht` enum('m','w','d') DEFAULT NULL,
-  `passwort` varchar(255) NOT NULL,
-  `strasse` varchar(150) NOT NULL,
-  `hausnr` varchar(10) NOT NULL,
-  `plz` varchar(10) NOT NULL,
-  `ort` varchar(150) NOT NULL,
-  `telefon` varchar(30) DEFAULT NULL,
-  `email` varchar(150) NOT NULL
+                          `kid` int(10) UNSIGNED NOT NULL,
+                          `nachname` varchar(100) NOT NULL,
+                          `vorname` varchar(100) NOT NULL,
+                          `geburtsdatum` date NOT NULL,
+                          `geschlecht` enum('m','w','d') DEFAULT NULL,
+                          `passwort` varchar(255) NOT NULL,
+                          `strasse` varchar(150) NOT NULL,
+                          `hausnr` varchar(10) NOT NULL,
+                          `plz` varchar(10) NOT NULL,
+                          `ort` varchar(150) NOT NULL,
+                          `telefon` varchar(30) DEFAULT NULL,
+                          `email` varchar(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -91,7 +98,7 @@ CREATE TABLE `kunden` (
 --
 
 INSERT INTO `kunden` (`kid`, `nachname`, `vorname`, `geburtsdatum`, `geschlecht`, `passwort`, `strasse`, `hausnr`, `plz`, `ort`, `telefon`, `email`) VALUES
-(12, 'Mustermann', 'Max', '1000-01-01', 'm', '$2y$10$FpTte5Rf4b11270sJXxvzO2uiYPvr7brZT3uAfENdvbUwfW0sC0we', 'Testalle', '00', '11111', 'teststadt', '00000 111111', 'test@test.de');
+    (12, 'Mustermann', 'Max', '1000-01-01', 'm', '$2y$10$FpTte5Rf4b11270sJXxvzO2uiYPvr7brZT3uAfENdvbUwfW0sC0we', 'Testalle', '00', '11111', 'teststadt', '00000 111111', 'test@test.de');
 
 -- --------------------------------------------------------
 
@@ -100,11 +107,11 @@ INSERT INTO `kunden` (`kid`, `nachname`, `vorname`, `geburtsdatum`, `geschlecht`
 --
 
 CREATE TABLE `liegeplaetze` (
-  `lid` int(11) UNSIGNED NOT NULL,
-  `anleger` varchar(50) NOT NULL,
-  `nummer` int(11) UNSIGNED NOT NULL,
-  `status` enum('verfuegbar','gesperrt','vermietet','belegt') NOT NULL DEFAULT 'verfuegbar',
-  `kosten_pt` int(11) UNSIGNED NOT NULL DEFAULT 100
+                                `lid` int(11) UNSIGNED NOT NULL,
+                                `anleger` varchar(50) NOT NULL,
+                                `nummer` int(11) UNSIGNED NOT NULL,
+                                `status` enum('verfuegbar','gesperrt','vermietet','belegt') NOT NULL DEFAULT 'verfuegbar',
+                                `kosten_pt` int(11) UNSIGNED NOT NULL DEFAULT 100
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -112,41 +119,41 @@ CREATE TABLE `liegeplaetze` (
 --
 
 INSERT INTO `liegeplaetze` (`lid`, `anleger`, `nummer`, `status`, `kosten_pt`) VALUES
-(1, 'A', 1, 'verfuegbar', 100),
-(2, 'A', 2, 'verfuegbar', 100),
-(3, 'A', 3, 'verfuegbar', 100),
-(4, 'A', 4, 'verfuegbar', 100),
-(5, 'A', 5, 'verfuegbar', 100),
-(6, 'A', 6, 'verfuegbar', 100),
-(7, 'A', 7, 'verfuegbar', 100),
-(8, 'A', 8, 'verfuegbar', 100),
-(9, 'A', 9, 'verfuegbar', 100),
-(10, 'A', 10, 'verfuegbar', 100),
-(11, 'A', 11, 'verfuegbar', 100),
-(12, 'A', 12, 'verfuegbar', 100),
-(13, 'A', 13, 'verfuegbar', 100),
-(14, 'A', 14, 'verfuegbar', 100),
-(15, 'A', 15, 'verfuegbar', 100),
-(16, 'A', 16, 'verfuegbar', 100),
-(17, 'A', 17, 'verfuegbar', 100),
-(18, 'B', 1, 'verfuegbar', 100),
-(19, 'B', 2, 'verfuegbar', 100),
-(20, 'B', 3, 'verfuegbar', 100),
-(21, 'B', 4, 'verfuegbar', 100),
-(22, 'B', 5, 'verfuegbar', 100),
-(23, 'B', 6, 'verfuegbar', 100),
-(24, 'B', 7, 'verfuegbar', 100),
-(25, 'B', 8, 'verfuegbar', 100),
-(26, 'B', 9, 'verfuegbar', 100),
-(27, 'B', 10, 'verfuegbar', 100),
-(28, 'B', 11, 'verfuegbar', 100),
-(29, 'B', 12, 'verfuegbar', 100),
-(30, 'B', 13, 'verfuegbar', 100),
-(31, 'B', 14, 'verfuegbar', 100),
-(32, 'B', 15, 'verfuegbar', 100),
-(33, 'B', 16, 'verfuegbar', 100),
-(34, 'B', 17, 'verfuegbar', 100),
-(35, 'B', 18, 'verfuegbar', 100);
+                                                                                   (1, 'A', 1, 'gesperrt', 100),
+                                                                                   (2, 'A', 2, 'belegt', 100),
+                                                                                   (3, 'A', 3, 'verfuegbar', 100),
+                                                                                   (4, 'A', 4, 'verfuegbar', 100),
+                                                                                   (5, 'A', 5, 'verfuegbar', 100),
+                                                                                   (6, 'A', 6, 'verfuegbar', 100),
+                                                                                   (7, 'A', 7, 'verfuegbar', 100),
+                                                                                   (8, 'A', 8, 'verfuegbar', 100),
+                                                                                   (9, 'A', 9, 'verfuegbar', 100),
+                                                                                   (10, 'A', 10, 'verfuegbar', 100),
+                                                                                   (11, 'A', 11, 'verfuegbar', 100),
+                                                                                   (12, 'A', 12, 'verfuegbar', 100),
+                                                                                   (13, 'A', 13, 'verfuegbar', 100),
+                                                                                   (14, 'A', 14, 'verfuegbar', 100),
+                                                                                   (15, 'A', 15, 'verfuegbar', 100),
+                                                                                   (16, 'A', 16, 'verfuegbar', 100),
+                                                                                   (17, 'A', 17, 'verfuegbar', 100),
+                                                                                   (18, 'B', 1, 'verfuegbar', 100),
+                                                                                   (19, 'B', 2, 'verfuegbar', 100),
+                                                                                   (20, 'B', 3, 'verfuegbar', 100),
+                                                                                   (21, 'B', 4, 'verfuegbar', 100),
+                                                                                   (22, 'B', 5, 'verfuegbar', 100),
+                                                                                   (23, 'B', 6, 'verfuegbar', 100),
+                                                                                   (24, 'B', 7, 'verfuegbar', 100),
+                                                                                   (25, 'B', 8, 'verfuegbar', 100),
+                                                                                   (26, 'B', 9, 'verfuegbar', 100),
+                                                                                   (27, 'B', 10, 'verfuegbar', 100),
+                                                                                   (28, 'B', 11, 'verfuegbar', 100),
+                                                                                   (29, 'B', 12, 'verfuegbar', 100),
+                                                                                   (30, 'B', 13, 'verfuegbar', 100),
+                                                                                   (31, 'B', 14, 'verfuegbar', 100),
+                                                                                   (32, 'B', 15, 'verfuegbar', 100),
+                                                                                   (33, 'B', 16, 'verfuegbar', 100),
+                                                                                   (34, 'B', 17, 'verfuegbar', 100),
+                                                                                   (35, 'B', 18, 'verfuegbar', 100);
 
 -- --------------------------------------------------------
 
@@ -155,23 +162,23 @@ INSERT INTO `liegeplaetze` (`lid`, `anleger`, `nummer`, `status`, `kosten_pt`) V
 --
 
 CREATE TABLE `liegeplatz_buchungen` (
-  `bid` int(11) UNSIGNED NOT NULL,
-  `lid` int(11) UNSIGNED NOT NULL,
-  `kid` int(11) UNSIGNED NOT NULL,
-  `von` date NOT NULL,
-  `bis` date NOT NULL,
-  `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
-  `created_at` datetime DEFAULT NULL,
-  `group_token` varchar(36) DEFAULT NULL,
-  `kosten` int(11) UNSIGNED DEFAULT NULL
+                                        `bid` int(11) UNSIGNED NOT NULL,
+                                        `lid` int(11) UNSIGNED NOT NULL,
+                                        `kid` int(11) UNSIGNED NOT NULL,
+                                        `von` date NOT NULL,
+                                        `bis` date NOT NULL,
+                                        `status` enum('aktiv','storniert') NOT NULL DEFAULT 'aktiv',
+                                        `created_at` datetime DEFAULT NULL,
+                                        `group_token` varchar(36) DEFAULT NULL,
+                                        `kosten` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `liegeplatz_buchungen`
 --
 
-INSERT INTO `liegeplatz_buchungen` (`bid`, `lid`, `kid`, `von`, `bis`, `status`, `created_at`, `group_token`) VALUES
-(1, 1, 12, '2020-01-01', '2020-01-10', 'aktiv', '2026-02-02 20:01:33', NULL);
+INSERT INTO `liegeplatz_buchungen` (`bid`, `lid`, `kid`, `von`, `bis`, `status`, `created_at`, `group_token`, `kosten`) VALUES
+    (6, 17, 12, '1010-01-01', '1010-01-10', 'aktiv', '2026-02-03 22:19:36', NULL, 1000);
 
 -- --------------------------------------------------------
 
@@ -180,13 +187,13 @@ INSERT INTO `liegeplatz_buchungen` (`bid`, `lid`, `kid`, `von`, `bis`, `status`,
 --
 
 CREATE TABLE `migrations` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `version` varchar(255) NOT NULL,
-  `class` varchar(255) NOT NULL,
-  `group` varchar(255) NOT NULL,
-  `namespace` varchar(255) NOT NULL,
-  `time` int(11) NOT NULL,
-  `batch` int(11) UNSIGNED NOT NULL
+                              `id` bigint(20) UNSIGNED NOT NULL,
+                              `version` varchar(255) NOT NULL,
+                              `class` varchar(255) NOT NULL,
+                              `group` varchar(255) NOT NULL,
+                              `namespace` varchar(255) NOT NULL,
+                              `time` int(11) NOT NULL,
+                              `batch` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -194,11 +201,11 @@ CREATE TABLE `migrations` (
 --
 
 INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`, `batch`) VALUES
-(6, '2026-01-12-000001', 'App\\Database\\Migrations\\CreateLiegeplaetze', 'default', 'App', 1769516376, 1),
-(7, '2026-01-13-000002', 'App\\Database\\Migrations\\CreateLiegeplatzBuchungen', 'default', 'App', 1769516376, 1),
-(8, '2026-01-13-000003', 'App\\Database\\Migrations\\CreateBoote', 'default', 'App', 1769516376, 1),
-(9, '2026-01-13-000004', 'App\\Database\\Migrations\\CreateBootBuchungen', 'default', 'App', 1769516376, 1),
-(10, '2026-01-27-000010', 'App\\Database\\Migrations\\AddGroupTokenToBookings', 'default', 'App', 1769516376, 1);
+                                                                                               (6, '2026-01-12-000001', 'App\\Database\\Migrations\\CreateLiegeplaetze', 'default', 'App', 1769516376, 1),
+                                                                                               (7, '2026-01-13-000002', 'App\\Database\\Migrations\\CreateLiegeplatzBuchungen', 'default', 'App', 1769516376, 1),
+                                                                                               (8, '2026-01-13-000003', 'App\\Database\\Migrations\\CreateBoote', 'default', 'App', 1769516376, 1),
+                                                                                               (9, '2026-01-13-000004', 'App\\Database\\Migrations\\CreateBootBuchungen', 'default', 'App', 1769516376, 1),
+                                                                                               (10, '2026-01-27-000010', 'App\\Database\\Migrations\\AddGroupTokenToBookings', 'default', 'App', 1769516376, 1);
 
 -- --------------------------------------------------------
 
@@ -207,12 +214,12 @@ INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`
 --
 
 CREATE TABLE `mitarbeiter` (
-  `mid` int(10) UNSIGNED NOT NULL,
-  `vorname` varchar(100) NOT NULL,
-  `nachname` varchar(100) NOT NULL,
-  `geschlecht` enum('m','w','d') DEFAULT NULL,
-  `passwort` varchar(255) NOT NULL,
-  `email` varchar(150) NOT NULL
+                               `mid` int(10) UNSIGNED NOT NULL,
+                               `vorname` varchar(100) NOT NULL,
+                               `nachname` varchar(100) NOT NULL,
+                               `geschlecht` enum('m','w','d') DEFAULT NULL,
+                               `passwort` varchar(255) NOT NULL,
+                               `email` varchar(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -220,7 +227,7 @@ CREATE TABLE `mitarbeiter` (
 --
 
 INSERT INTO `mitarbeiter` (`mid`, `vorname`, `nachname`, `geschlecht`, `passwort`, `email`) VALUES
-(1, 'Admin', 'Admin', 'm', '$2y$10$pRp.2wonfm4r73.SLAxxS.dx3FiYKxYMaTvGpc37N32YKZE6i9HL2', 'admin@admin');
+    (1, 'Admin', 'Admin', 'm', '$2y$10$vRfq/xsRGhkswAiTm55iLO0Im7WH4OkgYr8RVTSAU2z2bbqx.fci6', 'admin@admin');
 
 --
 -- Indizes der exportierten Tabellen
@@ -230,13 +237,13 @@ INSERT INTO `mitarbeiter` (`mid`, `vorname`, `nachname`, `geschlecht`, `passwort
 -- Indizes für die Tabelle `boote`
 --
 ALTER TABLE `boote`
-  ADD PRIMARY KEY (`boid`);
+    ADD PRIMARY KEY (`boid`);
 
 --
 -- Indizes für die Tabelle `boot_buchungen`
 --
 ALTER TABLE `boot_buchungen`
-  ADD PRIMARY KEY (`bbid`),
+    ADD PRIMARY KEY (`bbid`),
   ADD KEY `boid` (`boid`),
   ADD KEY `kid` (`kid`);
 
@@ -244,7 +251,7 @@ ALTER TABLE `boot_buchungen`
 -- Indizes für die Tabelle `kunden`
 --
 ALTER TABLE `kunden`
-  ADD PRIMARY KEY (`kid`),
+    ADD PRIMARY KEY (`kid`),
   ADD UNIQUE KEY `uniq_kunden_email` (`email`),
   ADD KEY `passwort` (`passwort`,`email`);
 
@@ -252,14 +259,14 @@ ALTER TABLE `kunden`
 -- Indizes für die Tabelle `liegeplaetze`
 --
 ALTER TABLE `liegeplaetze`
-  ADD PRIMARY KEY (`lid`),
+    ADD PRIMARY KEY (`lid`),
   ADD UNIQUE KEY `anleger_nummer` (`anleger`,`nummer`);
 
 --
 -- Indizes für die Tabelle `liegeplatz_buchungen`
 --
 ALTER TABLE `liegeplatz_buchungen`
-  ADD PRIMARY KEY (`bid`),
+    ADD PRIMARY KEY (`bid`),
   ADD KEY `lid` (`lid`),
   ADD KEY `kid` (`kid`);
 
@@ -267,13 +274,13 @@ ALTER TABLE `liegeplatz_buchungen`
 -- Indizes für die Tabelle `migrations`
 --
 ALTER TABLE `migrations`
-  ADD PRIMARY KEY (`id`);
+    ADD PRIMARY KEY (`id`);
 
 --
 -- Indizes für die Tabelle `mitarbeiter`
 --
 ALTER TABLE `mitarbeiter`
-  ADD PRIMARY KEY (`mid`),
+    ADD PRIMARY KEY (`mid`),
   ADD UNIQUE KEY `email_unique` (`email`);
 
 --
@@ -284,43 +291,43 @@ ALTER TABLE `mitarbeiter`
 -- AUTO_INCREMENT für Tabelle `boote`
 --
 ALTER TABLE `boote`
-  MODIFY `boid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+    MODIFY `boid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT für Tabelle `boot_buchungen`
 --
 ALTER TABLE `boot_buchungen`
-  MODIFY `bbid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+    MODIFY `bbid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT für Tabelle `kunden`
 --
 ALTER TABLE `kunden`
-  MODIFY `kid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+    MODIFY `kid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT für Tabelle `liegeplaetze`
 --
 ALTER TABLE `liegeplaetze`
-  MODIFY `lid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+    MODIFY `lid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT für Tabelle `liegeplatz_buchungen`
 --
 ALTER TABLE `liegeplatz_buchungen`
-  MODIFY `bid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+    MODIFY `bid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT für Tabelle `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT für Tabelle `mitarbeiter`
 --
 ALTER TABLE `mitarbeiter`
-  MODIFY `mid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+    MODIFY `mid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints der exportierten Tabellen
@@ -330,14 +337,14 @@ ALTER TABLE `mitarbeiter`
 -- Constraints der Tabelle `boot_buchungen`
 --
 ALTER TABLE `boot_buchungen`
-  ADD CONSTRAINT `boot_buchungen_boid_foreign` FOREIGN KEY (`boid`) REFERENCES `boote` (`boid`) ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT `boot_buchungen_boid_foreign` FOREIGN KEY (`boid`) REFERENCES `boote` (`boid`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `boot_buchungen_kid_foreign` FOREIGN KEY (`kid`) REFERENCES `kunden` (`kid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints der Tabelle `liegeplatz_buchungen`
 --
 ALTER TABLE `liegeplatz_buchungen`
-  ADD CONSTRAINT `liegeplatz_buchungen_kid_foreign` FOREIGN KEY (`kid`) REFERENCES `kunden` (`kid`) ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT `liegeplatz_buchungen_kid_foreign` FOREIGN KEY (`kid`) REFERENCES `kunden` (`kid`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `liegeplatz_buchungen_lid_foreign` FOREIGN KEY (`lid`) REFERENCES `liegeplaetze` (`lid`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 

@@ -534,6 +534,11 @@ select:focus{
     cursor: grab;
 }
 
+.boat-item.is-disabled{
+    opacity: .55;
+    cursor: not-allowed;
+}
+
 .boat-item:active{ cursor: grabbing; }
 
 .boat-item__title{

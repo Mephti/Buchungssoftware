@@ -99,7 +99,8 @@
                             v-for="b in boatsAvailable"
                             :key="b.boid"
                             class="boat-item"
-                            draggable="true"
+                            :class="{ 'is-disabled': b.status !== 'verfuegbar' }"
+                            :draggable="b.status === 'verfuegbar'"
                             @dragstart="onDragStart(b, $event)"
                             @dragend="onDragEnd"
                     >

@@ -20,6 +20,7 @@
             <th>Bis</th>
             <th>Kosten</th>
             <th>Status</th>
+            <th>Rechnung</th>
             <th>Aktion</th>
         </tr>
         </thead>
@@ -33,6 +34,13 @@
                 <td><?= esc($b['bis']) ?></td>
                 <td><?= esc($b['kosten'] ?? 0) ?></td>
                 <td><?= esc($b['status']) ?></td>
+                <td>
+                    <?php if (($b['status'] ?? '') === 'aktiv'): ?>
+                        <a href="<?= site_url('rechnung/liegeplatz/' . $b['bid']) ?>" target="_blank" rel="noopener">PDF</a>
+                    <?php else: ?>
+                        —
+                    <?php endif; ?>
+                </td>
                 <td>
                     <?php if (($b['status'] ?? '') !== 'storniert'): ?>
                         <form method="post" action="<?= site_url('meine-buchungen/storno') ?>" style="display:inline;">
@@ -69,6 +77,7 @@
             <th>Bis</th>
             <th>Kosten</th>
             <th>Status</th>
+            <th>Rechnung</th>
             <th>Aktion</th>
         </tr>
         </thead>
@@ -83,6 +92,13 @@
                 <td><?= esc($b['bis']) ?></td>
                 <td><?= esc($b['kosten'] ?? 0) ?></td>
                 <td><?= esc($b['status']) ?></td>
+                <td>
+                    <?php if (($b['status'] ?? '') === 'aktiv'): ?>
+                        <a href="<?= site_url('rechnung/boot/' . $b['bbid']) ?>" target="_blank" rel="noopener">PDF</a>
+                    <?php else: ?>
+                        —
+                    <?php endif; ?>
+                </td>
                 <td>
                     <?php if (($b['status'] ?? '') !== 'storniert'): ?>
                         <form method="post" action="<?= site_url('meine-buchungen/storno') ?>" style="display:inline;">

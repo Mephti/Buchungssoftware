@@ -19,6 +19,7 @@ $routes->post('register', 'AuthController::register');
 $routes->get('mein-konto', 'AccountController::index');
 $routes->get('meine-buchungen', 'AccountController::bookings');
 $routes->post('meine-buchungen/storno', 'AccountController::cancelBooking');
+$routes->get('rechnung/(:segment)/(:num)', 'AccountController::invoice/$1/$2');
 
 $routes->get('mitarbeiter', 'MitarbeiterController::index');
 $routes->get('mitarbeiter/buchung', 'MitarbeiterController::bookingForm');
